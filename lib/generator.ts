@@ -87,6 +87,13 @@ function shiftTypeForByMode(
   }
 }
 
+// NEW: safe formatter (Luxon toISO() can return null for invalid DateTimes)
+function isoOrThrow(dt: DateTime, label: string): string {
+  const s = dt.toISO();
+  if (!s) throw new Error(`Invalid DateTime while formatting ${label}`);
+  return s;
+}
+
 export function generateShiftEvents(cfg: ShiftConfig): ShiftEvent[] {
   const tz = cfg.timezone || "Europe/London";
   const rangeStart = DateTime.fromISO(cfg.rangeStart, { zone: tz }).startOf(
@@ -121,7 +128,6 @@ export function generateShiftEvents(cfg: ShiftConfig): ShiftEvent[] {
     const ref = lockTypePerCluster ? clusterStart : dt; // NEW
 
     const type = shiftTypeForByMode(
-      // NEW
       ref,
       anchor,
       cfg.startMode,
@@ -140,6 +146,12 @@ export function generateShiftEvents(cfg: ShiftConfig): ShiftEvent[] {
     const startUTC = startLocal.toUTC();
     const endUTC = endLocal.toUTC();
 
+    // CHANGED: format once and validate to satisfy TS (string, not string|null)
+    const startISO = isoOrThrow(startUTC, "startISO");
+    const endISO = isoOrThrow(endUTC, "endISO");
+    const localStartISO = isoOrThrow(startLocal, "localStart");
+    const localEndISO = isoOrThrow(endLocal, "localEnd");
+
     const title = type === "day" ? dayTitle : nightTitle;
 
     // Date-only ID so re-runs update the same day (no dupes)
@@ -147,10 +159,10 @@ export function generateShiftEvents(cfg: ShiftConfig): ShiftEvent[] {
 
     out.push({
       id,
-      startISO: startUTC.toISO(),
-      endISO: endUTC.toISO(),
-      localStart: startLocal.toISO(),
-      localEnd: endLocal.toISO(),
+      startISO, // CHANGED
+      endISO, // CHANGED
+      localStart: localStartISO, // CHANGED
+      localEnd: localEndISO, // CHANGED
       type,
       title,
       description: cfg.description,
