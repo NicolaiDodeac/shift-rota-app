@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState, useEffect, useRef } from "react";
-import { signIn, useSession } from "next-auth/react"; // NEW: auth helpers
+import { useMemo, useState } from "react"; // CHANGED: removed useEffect/useRef
+import { signIn, useSession } from "next-auth/react";
 import LoaderOverlay from "@/components/LoaderOverlay";
 import ResultOverlay from "@/components/ResultOverlay";
 import {
@@ -11,23 +11,10 @@ import {
 } from "@/lib/generator";
 
 const todayISO = new Date().toISOString().slice(0, 10);
-const CHUNK_SIZE = 25; // number of events per batch when pushing to Google
+const CHUNK_SIZE = 25;
 
 export default function Page() {
-  // NEW: read auth status on the client
-  const { status } = useSession(); // "loading" | "authenticated" | "unauthenticated"
-  const redirectOnceRef = useRef(false); // NEW: avoid double signIn in React Strict Mode
-
-  // NEW: auto-redirect to Google sign-in when user is not authenticated
-  useEffect(() => {
-    if (status === "unauthenticated" && !redirectOnceRef.current) {
-      redirectOnceRef.current = true;
-      // Preserve return URL so we land back on this page after sign-in
-      signIn("google", {
-        callbackUrl: typeof window !== "undefined" ? window.location.href : "/",
-      });
-    }
-  }, [status]);
+  const { status } = useSession(); // "authenticated" | "unauthenticated" | "loading"
 
   const [cfg, setCfg] = useState<ShiftConfig>({
     timezone: process.env.NEXT_PUBLIC_DEFAULT_TZ || "Europe/London",
@@ -74,6 +61,12 @@ export default function Page() {
   }
 
   async function pushToGoogle() {
+    // NEW: if user isn’t signed in yet, trigger Google login first
+    if (status !== "authenticated") {
+      await signIn("google", { callbackUrl: window.location.href });
+      return;
+    }
+
     setIsPushing(true);
     setResult(null);
     setProgress({ current: 0, total: events.length });
@@ -96,7 +89,7 @@ export default function Page() {
           }),
         });
 
-        // NEW: if session expired/missing, trigger sign-in and stop
+        // Safety net: if session expired mid-process, prompt sign-in
         if (res.status === 401) {
           await signIn("google", { callbackUrl: window.location.href });
           return;
@@ -170,6 +163,12 @@ export default function Page() {
   }).toString();
 
   async function deleteFromGoogle() {
+    // NEW: gate delete behind sign-in too
+    if (status !== "authenticated") {
+      await signIn("google", { callbackUrl: window.location.href });
+      return;
+    }
+
     setIsPushing(true);
     setResult(null);
     try {
@@ -184,7 +183,6 @@ export default function Page() {
         }),
       });
 
-      // NEW: if session expired/missing, trigger sign-in and stop
       if (res.status === 401) {
         await signIn("google", { callbackUrl: window.location.href });
         return;
@@ -219,15 +217,24 @@ export default function Page() {
     <main>
       <h1>4-on-4-off Shift Rota</h1>
 
-      {/* OPTIONAL UX: while NextAuth is determining status, dim controls */}
-      {status === "loading" && (
-        <p style={{ opacity: 0.8, margin: "8px 0" }}>Checking your session…</p>
+      {/* NEW: gentle sign-in nudge; no auto-redirect */}
+      {status !== "authenticated" && (
+        <div className="card" style={{ marginTop: 12 }}>
+          <p>
+            <b>Sign in to sync with Google Calendar.</b>
+          </p>
+          <button
+            className="btn"
+            onClick={() =>
+              signIn("google", { callbackUrl: window.location.href })
+            }
+          >
+            Sign in with Google
+          </button>
+        </div>
       )}
 
-      <div
-        className="card"
-        style={{ marginTop: 16, opacity: status === "authenticated" ? 1 : 0.6 }}
-      >
+      <div className="card" style={{ marginTop: 16 }}>
         <div className="grid">
           <div>
             <label>Timezone</label>
@@ -401,14 +408,11 @@ export default function Page() {
         <div
           style={{ display: "flex", gap: 12, marginTop: 12, flexWrap: "wrap" }}
         >
-          <button
-            className="btn"
-            onClick={pushToGoogle}
-            disabled={isPushing || status !== "authenticated"} // NEW: disabled until signed in
-            title={status !== "authenticated" ? "Sign in required" : undefined}
-          >
+          <button className="btn" onClick={pushToGoogle} disabled={isPushing}>
+            {/* CHANGED: not disabled by auth; handler triggers sign-in if needed */}
             {isPushing ? "Syncing…" : "Add to Google Calendar"}
           </button>
+
           <a
             className={`btn secondary ${isPushing ? "disabled" : ""}`}
             href={`/api/ics?${qs}`}
@@ -419,12 +423,13 @@ export default function Page() {
           >
             Get ICS feed (subscribe)
           </a>
+
           <button
             className="btn secondary"
             onClick={deleteFromGoogle}
-            disabled={isPushing || status !== "authenticated"} // NEW
-            title={status !== "authenticated" ? "Sign in required" : undefined}
+            disabled={isPushing}
           >
+            {/* CHANGED: not disabled by auth; handler triggers sign-in if needed */}
             {isPushing ? "Working…" : "Delete season (Google)"}
           </button>
         </div>
