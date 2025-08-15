@@ -85,6 +85,10 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
   },
+  pages: {
+    signIn: "/api/auth/signin", // keep Google’s default sign-in
+    error: "/auth/error", // NEW: show our friendly page on access_denied
+  },
 };
 
 export default NextAuth(authOptions);

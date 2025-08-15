@@ -26,6 +26,11 @@
     "eslint-config-next": "14.2.5",
     "typescript": "^5.4.5"
   },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "unrs-resolver"
+    ]
+  },
   "engines": {
     "node": ">=18.17 <23"
   }
