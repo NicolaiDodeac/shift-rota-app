@@ -1,18 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import { useMemo, useState } from "react";
+import Link from "next/link";
 
 const DEV_EMAIL = "mykola.dodiak@gmail.com"; // your address
 
-export default function AuthErrorClient({
-  err,
-  hinted,
-}: {
-  err: string;
-  hinted: string;
-}) {
-  const [email, setEmail] = useState(hinted ?? "");
+export default function RequestAccessPage() {
+  const [email, setEmail] = useState("");
   const [touched, setTouched] = useState(false);
 
   const isValidEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
@@ -52,17 +46,12 @@ export default function AuthErrorClient({
 
   return (
     <main className="card" style={{ maxWidth: 720, margin: "48px auto" }}>
-      <h1>Request access</h1>
-
-      {err === "AccessDenied" ? (
-        <p>
-          This app is currently in <b>Testing</b>. Only approved testers can
-          sign in. Send us a quick email and we’ll add you to the tester list.
-          Please use the same email as your Google Calendar.
-        </p>
-      ) : (
-        <p>Something went wrong. You can request access below.</p>
-      )}
+      <h1>Request tester access</h1>
+      <p>
+        The app is in <b>Testing</b>. Only approved testers can sign in. Send
+        your Google account email and we’ll add you to the tester list. Please
+        use email you would use for your Google Calendar.
+      </p>
 
       <div style={{ marginTop: 16 }}>
         <label htmlFor="email">Your Google email</label>

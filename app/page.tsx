@@ -231,6 +231,9 @@ export default function Page() {
           >
             Sign in with Google
           </button>
+          <a className="btn secondary" href="/auth/request">
+            Not on the tester list? Request access
+          </a>
         </div>
       )}
 
