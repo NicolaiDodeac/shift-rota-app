@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
+import { signIn, useSession } from "next-auth/react"; // NEW: auth helpers
 import LoaderOverlay from "@/components/LoaderOverlay";
 import ResultOverlay from "@/components/ResultOverlay";
 import {
@@ -13,6 +14,21 @@ const todayISO = new Date().toISOString().slice(0, 10);
 const CHUNK_SIZE = 25; // number of events per batch when pushing to Google
 
 export default function Page() {
+  // NEW: read auth status on the client
+  const { status } = useSession(); // "loading" | "authenticated" | "unauthenticated"
+  const redirectOnceRef = useRef(false); // NEW: avoid double signIn in React Strict Mode
+
+  // NEW: auto-redirect to Google sign-in when user is not authenticated
+  useEffect(() => {
+    if (status === "unauthenticated" && !redirectOnceRef.current) {
+      redirectOnceRef.current = true;
+      // Preserve return URL so we land back on this page after sign-in
+      signIn("google", {
+        callbackUrl: typeof window !== "undefined" ? window.location.href : "/",
+      });
+    }
+  }, [status]);
+
   const [cfg, setCfg] = useState<ShiftConfig>({
     timezone: process.env.NEXT_PUBLIC_DEFAULT_TZ || "Europe/London",
     rangeStart: todayISO,
@@ -50,7 +66,7 @@ export default function Page() {
 
   const events = useMemo<ShiftEvent[]>(() => generateShiftEvents(cfg), [cfg]);
 
-  // split array into chunks
+  // helper to cut array into chunks
   function chunk<T>(arr: T[], size: number) {
     const out: T[][] = [];
     for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
@@ -79,6 +95,12 @@ export default function Page() {
             dedicatedCalendarColorId: dedicatedColorId,
           }),
         });
+
+        // NEW: if session expired/missing, trigger sign-in and stop
+        if (res.status === 401) {
+          await signIn("google", { callbackUrl: window.location.href });
+          return;
+        }
 
         const raw = await res.text();
         let parsed: any = null;
@@ -144,7 +166,7 @@ export default function Page() {
     ntitle: cfg.nightTitle || "",
     desc: cfg.description || "",
     lock: cfg.lockTypePerCluster ? "1" : "0",
-    rmode: cfg.rotationMode ?? "twoBlock", // include rotation rule in ICS feed
+    rmode: cfg.rotationMode ?? "twoBlock",
   }).toString();
 
   async function deleteFromGoogle() {
@@ -161,6 +183,13 @@ export default function Page() {
           dedicatedCalendarName: dedicatedName,
         }),
       });
+
+      // NEW: if session expired/missing, trigger sign-in and stop
+      if (res.status === 401) {
+        await signIn("google", { callbackUrl: window.location.href });
+        return;
+      }
+
       const parsed = await res.json().catch(() => ({}));
       if (!res.ok) {
         setResult({
@@ -190,7 +219,15 @@ export default function Page() {
     <main>
       <h1>4-on-4-off Shift Rota</h1>
 
-      <div className="card" style={{ marginTop: 16 }}>
+      {/* OPTIONAL UX: while NextAuth is determining status, dim controls */}
+      {status === "loading" && (
+        <p style={{ opacity: 0.8, margin: "8px 0" }}>Checking your session…</p>
+      )}
+
+      <div
+        className="card"
+        style={{ marginTop: 16, opacity: status === "authenticated" ? 1 : 0.6 }}
+      >
         <div className="grid">
           <div>
             <label>Timezone</label>
@@ -364,7 +401,12 @@ export default function Page() {
         <div
           style={{ display: "flex", gap: 12, marginTop: 12, flexWrap: "wrap" }}
         >
-          <button className="btn" onClick={pushToGoogle} disabled={isPushing}>
+          <button
+            className="btn"
+            onClick={pushToGoogle}
+            disabled={isPushing || status !== "authenticated"} // NEW: disabled until signed in
+            title={status !== "authenticated" ? "Sign in required" : undefined}
+          >
             {isPushing ? "Syncing…" : "Add to Google Calendar"}
           </button>
           <a
@@ -380,7 +422,8 @@ export default function Page() {
           <button
             className="btn secondary"
             onClick={deleteFromGoogle}
-            disabled={isPushing}
+            disabled={isPushing || status !== "authenticated"} // NEW
+            title={status !== "authenticated" ? "Sign in required" : undefined}
           >
             {isPushing ? "Working…" : "Delete season (Google)"}
           </button>
