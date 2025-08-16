@@ -1,270 +1,114 @@
-* {
+/* --- small reset --- */
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
+* {
+  margin: 0;
+}
+html,
 body {
-  background: #0b0c10;
-  color: #e8e8ea;
+  height: 100%;
 }
-.card {
-  background: #16181d;
-  border: 1px solid #2a2f3a;
-  border-radius: 12px;
-  padding: 16px;
-}
-input,
-select,
-button {
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid #2a2f3a;
-  background: #0f1217;
-  color: #eee;
-}
-label {
+img,
+svg,
+video {
   display: block;
-  font-size: 12px;
-  color: #b8b8be;
-  margin-bottom: 6px;
+  max-width: 100%;
 }
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 12px;
-}
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-th,
-td {
-  border-bottom: 1px solid #2a2f3a;
-  padding: 8px;
-  text-align: left;
-}
-.btn {
-  background: #4f46e5;
-  border: none;
+button {
   cursor: pointer;
 }
-.btn.secondary {
-  background: #2a2f3a;
-}
 a {
-  color: #8ab4ff;
+  text-decoration: none;
+  color: inherit;
 }
-/* Brand colors (tweak to match your logo exactly) */
+
+/* --- theme tokens --- */
 :root {
-  --brand-blue: #0e3a66;
-  --brand-orange: #f5a623;
+  --brand: #23c6ff;
+  --brand1: #f5cf0f;
+  --brand-600: #12a9de;
+  --brand-601: #dea812;
+  --brand-700: #0f8fbd;
+
+  --bg: #0f1116;
+  --surface-1: #151823;
+  --surface-2: #1b2030;
+  --surface-3: #232b3f;
+
+  --text: #e8edf6;
+  --muted: #aab3c5;
+
+  --ok: #39d98a;
+  --err: #ff6b6b;
+
+  --border: #26314a;
+  --radius: 12px;
+  --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.35);
 }
 
-/* Overlay container */
-.loader-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(11, 12, 16, 0.72);
-  -webkit-backdrop-filter: blur(6px);
-  backdrop-filter: blur(6px);
-  display: grid;
-  place-items: center;
-  z-index: 9999;
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #f6f8fb;
+    --surface-1: #ffffff;
+    --surface-2: #f4f6fb;
+    --surface-3: #eef2f9;
+    --text: #111827;
+    --muted: #5b6475;
+    --border: #e6eaf2;
+    --shadow-lg: 0 10px 30px rgba(16, 24, 40, 0.08);
+  }
 }
 
-.loader-card {
-  background: #16181d;
-  border: 1px solid #2a2f3a;
-  border-radius: 16px;
-  padding: 24px 28px;
-  min-width: 280px;
-  display: grid;
-  justify-items: center;
-  gap: 10px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+html {
+  color-scheme: dark light;
+}
+body {
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.55 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto,
+    Inter, Arial, sans-serif;
 }
 
-.loader-orbit {
+/* base form controls (kept global so you don't repeat classes on every input) */
+label {
   display: block;
+  font-size: 13px;
+  color: var(--muted);
+  margin: 6px 0 6px;
 }
-
-.ring {
-  fill: none;
-  stroke-linecap: round;
+input[type="text"],
+input[type="email"],
+input[type="date"],
+input[type="time"],
+input[type="number"],
+select,
+textarea {
+  width: 100%;
+  background: #0f1322;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
-.blue {
-  stroke: var(--brand-blue);
-}
-.orange {
-  stroke: var(--brand-orange);
-}
-
-.animate-cw {
-  animation: orbit-cw 2.1s linear infinite;
-  transform-origin: 50% 50%;
-}
-.animate-ccw {
-  animation: orbit-ccw 1.8s linear infinite;
-  transform-origin: 50% 50%;
-}
-
-@keyframes orbit-cw {
-  to {
-    transform: rotate(360deg);
+@media (prefers-color-scheme: light) {
+  input[type],
+  select,
+  textarea {
+    background: #fff;
   }
 }
-@keyframes orbit-ccw {
-  to {
-    transform: rotate(-360deg);
-  }
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: color-mix(in oklab, var(--brand) 65%, #fff 35%);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--brand) 28%, transparent);
 }
-
-/* Center sun */
-.sun-pulse circle {
-  fill: var(--brand-orange);
-}
-.sun-pulse line {
-  stroke: var(--brand-orange);
-  stroke-width: 3;
-  stroke-linecap: round;
-}
-.sun-pulse {
-  animation: sun 1.6s ease-in-out infinite;
-  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.45));
-}
-
-@keyframes sun {
-  0%,
-  100% {
-    transform: scale(1);
-    opacity: 0.9;
-  }
-  50% {
-    transform: scale(1.08);
-    opacity: 1;
-  }
-}
-
-.loader-title {
-  font-weight: 600;
-  font-size: 16px;
-}
-.loader-sub {
-  font-size: 12px;
-  color: #b8b8be;
-}
-
-.dots span {
-  display: inline-block;
-  font-size: 22px;
-  line-height: 1;
-  animation: blink 1.2s infinite;
-}
-.dots span:nth-child(2) {
-  animation-delay: 0.2s;
-}
-.dots span:nth-child(3) {
-  animation-delay: 0.4s;
-}
-
-@keyframes blink {
-  0%,
-  20% {
-    opacity: 0.2;
-    transform: translateY(0);
-  }
-  50% {
-    opacity: 1;
-    transform: translateY(-2px);
-  }
-  100% {
-    opacity: 0.2;
-    transform: translateY(0);
-  }
-}
-:root {
-  --ok-green: #22c55e;
-  --bad-red: #ef4444;
-}
-
-/* result icons */
-.icon-result {
-  display: block;
-}
-
-.pulse-ring {
-  fill: none;
-  stroke-width: 8;
-  opacity: 0.22;
-  transform-origin: 50% 50%;
-  animation: pulse 1.2s ease-out 1;
-}
-.pulse-ring.ok {
-  stroke: var(--ok-green);
-}
-.pulse-ring.err {
-  stroke: var(--bad-red);
-}
-
-.result-circle {
-  fill: none;
-  stroke-width: 8;
-  stroke-linecap: round;
-  stroke-dasharray: 360;
-  stroke-dashoffset: 360;
-  animation: draw 0.6s ease forwards 0.05s;
-}
-.result-circle.ok {
-  stroke: var(--ok-green);
-}
-.result-circle.err {
-  stroke: var(--bad-red);
-}
-
-.result-check,
-.result-x {
-  fill: none;
-  stroke-width: 8;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-dasharray: 120;
-  stroke-dashoffset: 120;
-  animation: draw 0.6s ease forwards 0.25s;
-}
-.result-check.ok {
-  stroke: var(--ok-green);
-}
-.result-x.err {
-  stroke: var(--bad-red);
-}
-
-@keyframes draw {
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-@keyframes pulse {
-  0% {
-    transform: scale(0.9);
-    opacity: 0;
-  }
-  50% {
-    opacity: 0.25;
-  }
-  100% {
-    transform: scale(1.08);
-    opacity: 0;
-  }
-}
-/* progress bar */
-.progress{
-  width: 240px;
-  height: 8px;
-  background: #2a2f3a;
-  border-radius: 9999px;
-  overflow: hidden;
-  margin-top: 4px;
-}
-.progress-bar{
-  height: 100%;
-  background: linear-gradient(90deg, var(--brand-orange), #ffd27a);
-  transition: width .25s ease;
+input[aria-invalid="true"] {
+  border-color: var(--err);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--err) 22%, transparent);
 }

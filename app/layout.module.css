@@ -1,0 +1,18 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: var(--surface-1);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(8px) saturate(120%);
+}
+
+.inner {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 10px 16px; /* comfy on mobile */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}

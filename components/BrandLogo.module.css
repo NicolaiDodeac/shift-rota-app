@@ -1,0 +1,15 @@
+.logo {
+  display: inline-flex;
+  align-items: center;
+  line-height: 0;
+  text-decoration: none;
+  border-radius: 10px;
+  transition: transform 0.06s ease, filter 0.15s ease;
+}
+.logo:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
+.logo:active {
+  transform: translateY(0);
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react"; // CHANGED: removed useEffect/useRef
+import { useMemo, useState } from "react";
 import { signIn, useSession } from "next-auth/react";
 import LoaderOverlay from "@/components/LoaderOverlay";
 import ResultOverlay from "@/components/ResultOverlay";
@@ -9,6 +9,7 @@ import {
   type ShiftConfig,
   type ShiftEvent,
 } from "@/lib/generator";
+import s from "./page.module.css";
 
 const todayISO = new Date().toISOString().slice(0, 10);
 const CHUNK_SIZE = 25;
@@ -53,7 +54,6 @@ export default function Page() {
 
   const events = useMemo<ShiftEvent[]>(() => generateShiftEvents(cfg), [cfg]);
 
-  // helper to cut array into chunks
   function chunk<T>(arr: T[], size: number) {
     const out: T[][] = [];
     for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
@@ -61,12 +61,10 @@ export default function Page() {
   }
 
   async function pushToGoogle() {
-    // NEW: if user isn’t signed in yet, trigger Google login first
     if (status !== "authenticated") {
       await signIn("google", { callbackUrl: window.location.href });
       return;
     }
-
     setIsPushing(true);
     setResult(null);
     setProgress({ current: 0, total: events.length });
@@ -75,7 +73,6 @@ export default function Page() {
 
     try {
       const batches = chunk(events, CHUNK_SIZE);
-
       for (const part of batches) {
         const res = await fetch("/api/push", {
           method: "POST",
@@ -89,7 +86,6 @@ export default function Page() {
           }),
         });
 
-        // Safety net: if session expired mid-process, prompt sign-in
         if (res.status === 401) {
           await signIn("google", { callbackUrl: window.location.href });
           return;
@@ -163,12 +159,10 @@ export default function Page() {
   }).toString();
 
   async function deleteFromGoogle() {
-    // NEW: gate delete behind sign-in too
     if (status !== "authenticated") {
       await signIn("google", { callbackUrl: window.location.href });
       return;
     }
-
     setIsPushing(true);
     setResult(null);
     try {
@@ -214,34 +208,37 @@ export default function Page() {
   }
 
   return (
-    <main>
-      <h1>4-on-4-off Shift Rota</h1>
+    <div className={s.wrap}>
+      <h1 className={s.h1}>4-on-4-off Shift Rota</h1>
 
-      {/* NEW: gentle sign-in nudge; no auto-redirect */}
+      {/* gentle sign-in nudge */}
       {status !== "authenticated" && (
-        <div className="card" style={{ marginTop: 12 }}>
+        <section className={s.card}>
           <p>
             <b>Sign in to sync with Google Calendar.</b>
           </p>
-          <button
-            className="btn"
-            onClick={() =>
-              signIn("google", { callbackUrl: window.location.href })
-            }
-          >
-            Sign in with Google
-          </button>
-          <a className="btn secondary" href="/auth/request">
-            Not on the tester list? Request access
-          </a>
-        </div>
+          <div className={s.actions}>
+            <button
+              className={s.btn}
+              onClick={() =>
+                signIn("google", { callbackUrl: window.location.href })
+              }
+            >
+              Sign in with Google
+            </button>
+            <a className={`${s.btn} ${s.secondary}`} href="/auth/request">
+              Not on the tester list? Request access
+            </a>
+          </div>
+        </section>
       )}
 
-      <div className="card" style={{ marginTop: 16 }}>
-        <div className="grid">
+      <section className={s.card}>
+        <div className={`${s.grid} ${s.gridCols3}`}>
           <div>
             <label>Timezone</label>
             <input
+              type="text"
               value={cfg.timezone}
               onChange={(e) => setCfg({ ...cfg, timezone: e.target.value })}
             />
@@ -282,7 +279,6 @@ export default function Page() {
               <option value="night">Night</option>
             </select>
           </div>
-
           <div>
             <label>Rotation rule</label>
             <select
@@ -295,7 +291,6 @@ export default function Page() {
               <option value="fortnight">Flip every N weeks</option>
             </select>
           </div>
-
           <div>
             <label>Day shift starts</label>
             <input
@@ -326,6 +321,7 @@ export default function Page() {
           <div>
             <label>Day title</label>
             <input
+              type="text"
               value={cfg.dayTitle}
               onChange={(e) => setCfg({ ...cfg, dayTitle: e.target.value })}
             />
@@ -333,6 +329,7 @@ export default function Page() {
           <div>
             <label>Night title</label>
             <input
+              type="text"
               value={cfg.nightTitle}
               onChange={(e) => setCfg({ ...cfg, nightTitle: e.target.value })}
             />
@@ -340,84 +337,76 @@ export default function Page() {
           <div>
             <label>Location</label>
             <input
+              type="text"
               value={cfg.location}
               onChange={(e) => setCfg({ ...cfg, location: e.target.value })}
             />
           </div>
+        </div>
 
-          <div className="card" style={{ marginTop: 12 }}>
-            <div
-              style={{
-                display: "flex",
-                gap: 12,
-                alignItems: "center",
-                flexWrap: "wrap",
-              }}
-            >
-              <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <input
-                  type="checkbox"
-                  checked={cfg.lockTypePerCluster ?? true}
-                  onChange={(e) =>
-                    setCfg({ ...cfg, lockTypePerCluster: e.target.checked })
-                  }
-                />
-                Lock Day/Night per 4-on (recommended)
-              </label>
+        <div className={s.panel}>
+          <div
+            style={{
+              display: "flex",
+              gap: 12,
+              alignItems: "center",
+              flexWrap: "wrap",
+            }}
+          >
+            <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <input
+                type="checkbox"
+                checked={cfg.lockTypePerCluster ?? true}
+                onChange={(e) =>
+                  setCfg({ ...cfg, lockTypePerCluster: e.target.checked })
+                }
+              />
+              Lock Day/Night per 4-on (recommended)
+            </label>
 
-              <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <input
-                  type="checkbox"
-                  checked={useDedicated}
-                  onChange={(e) => setUseDedicated(e.target.checked)}
-                />
-                Use dedicated “Shift Rota” calendar
-              </label>
+            <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <input
+                type="checkbox"
+                checked={useDedicated}
+                onChange={(e) => setUseDedicated(e.target.checked)}
+              />
+              Use dedicated “Shift Rota” calendar
+            </label>
 
-              {useDedicated && (
-                <>
-                  <label>
-                    <span style={{ fontSize: 12, color: "#b8b8be" }}>
-                      Calendar name
-                    </span>
-                    <input
-                      value={dedicatedName}
-                      onChange={(e) => setDedicatedName(e.target.value)}
-                    />
-                  </label>
-                  <label>
-                    <span style={{ fontSize: 12, color: "#b8b8be" }}>
-                      Color ID
-                    </span>
-                    <input
-                      value={dedicatedColorId}
-                      onChange={(e) => setDedicatedColorId(e.target.value)}
-                    />
-                  </label>
-                </>
-              )}
-            </div>
-          </div>
-
-          <div style={{ gridColumn: "1 / -1" }}>
-            <label>Description</label>
-            <input
-              value={cfg.description}
-              onChange={(e) => setCfg({ ...cfg, description: e.target.value })}
-            />
+            {useDedicated && (
+              <>
+                <label>
+                  <span className={s.muted} style={{ fontSize: 12 }}>
+                    Calendar name
+                  </span>
+                  <input
+                    type="text"
+                    value={dedicatedName}
+                    onChange={(e) => setDedicatedName(e.target.value)}
+                  />
+                </label>
+                <label>
+                  <span className={s.muted} style={{ fontSize: 12 }}>
+                    Color ID
+                  </span>
+                  <input
+                    type="number"
+                    value={dedicatedColorId}
+                    onChange={(e) => setDedicatedColorId(e.target.value)}
+                  />
+                </label>
+              </>
+            )}
           </div>
         </div>
 
-        <div
-          style={{ display: "flex", gap: 12, marginTop: 12, flexWrap: "wrap" }}
-        >
-          <button className="btn" onClick={pushToGoogle} disabled={isPushing}>
-            {/* CHANGED: not disabled by auth; handler triggers sign-in if needed */}
+        <div className={s.actions}>
+          <button className={s.btn} onClick={pushToGoogle} disabled={isPushing}>
             {isPushing ? "Syncing…" : "Add to Google Calendar"}
           </button>
 
           <a
-            className={`btn secondary ${isPushing ? "disabled" : ""}`}
+            className={`${s.btn} ${s.secondary} ${isPushing ? s.disabled : ""}`}
             href={`/api/ics?${qs}`}
             onClick={(e) => isPushing && e.preventDefault()}
             aria-disabled={isPushing}
@@ -428,19 +417,20 @@ export default function Page() {
           </a>
 
           <button
-            className="btn secondary"
+            className={`${s.btn} ${s.secondary}`}
             onClick={deleteFromGoogle}
             disabled={isPushing}
           >
-            {/* CHANGED: not disabled by auth; handler triggers sign-in if needed */}
             {isPushing ? "Working…" : "Delete season (Google)"}
           </button>
         </div>
-      </div>
+      </section>
 
-      <div className="card" style={{ marginTop: 16 }}>
-        <h3>Preview ({events.length} shifts)</h3>
-        <table>
+      <section className={s.card}>
+        <h3 style={{ fontSize: 22, marginBottom: 6 }}>
+          Preview ({events.length} shifts)
+        </h3>
+        <table className={s.table}>
           <thead>
             <tr>
               <th>Start (local)</th>
@@ -460,8 +450,12 @@ export default function Page() {
             ))}
           </tbody>
         </table>
-        {events.length > 100 && <p>Showing first 100…</p>}
-      </div>
+        {events.length > 100 && (
+          <p className={s.muted} style={{ marginTop: 8 }}>
+            Showing first 100…
+          </p>
+        )}
+      </section>
 
       {/* Overlays */}
       {isPushing && (
@@ -481,6 +475,6 @@ export default function Page() {
           autoHideMs={2200}
         />
       )}
-    </main>
+    </div>
   );
 }

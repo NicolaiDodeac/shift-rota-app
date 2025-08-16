@@ -1,0 +1,152 @@
+/* components/LoaderOverlay.module.css */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  background: rgba(5, 8, 14, 0.65);
+  backdrop-filter: blur(8px) saturate(120%);
+}
+
+.card {
+  width: min(560px, 92vw); /* mobile-first: shrink nicely on phones */
+  background: linear-gradient(180deg, var(--surface-1), var(--surface-2));
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
+  padding: 18px;
+  text-align: center;
+}
+
+.title {
+  font-size: 1.25rem; /* ~20px on mobile */
+  font-weight: 700;
+  margin-top: 10px;
+}
+
+.sub {
+  color: var(--muted);
+  margin-top: 4px;
+  font-size: 0.95rem;
+}
+
+/* SVG orbit + rings */
+.orbit {
+  display: block;
+  margin-inline: auto;
+  filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.25));
+}
+
+.ring {
+  fill: none;
+}
+.ring.blue {
+  stroke: var(--brand);
+}
+.ring.orange {
+  stroke: #ff8a00;
+} /* brand accent; tweak if you like */
+
+.animateCw {
+  animation: spinCw 1.6s linear infinite;
+  transform-origin: 60px 60px; /* center of the 120x120 viewBox */
+}
+.animateCcw {
+  animation: spinCcw 1.8s linear infinite;
+  transform-origin: 60px 60px;
+}
+
+@keyframes spinCw {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes spinCcw {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+/* “sun pulse” in the middle */
+.sunPulse circle {
+  fill: color-mix(in oklab, var(--brand) 60%, white 15%);
+  animation: sunPop 1.8s ease-in-out infinite;
+}
+.sunPulse line {
+  stroke: color-mix(in oklab, var(--brand) 70%, white 10%);
+  stroke-width: 3;
+  stroke-linecap: round;
+  animation: ray 1.8s ease-in-out infinite;
+}
+@keyframes sunPop {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.95;
+  }
+  50% {
+    transform: scale(1.07);
+    opacity: 1;
+  }
+}
+@keyframes ray {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* progress bar */
+.progress {
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: #0f1322;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  margin-top: 12px;
+}
+.progressBar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--brand), #0f8fbd);
+  width: 0%;
+  transition: width 0.2s ease;
+}
+
+/* bouncing dots */
+.dots {
+  display: inline-flex;
+  gap: 6px;
+  margin-top: 10px;
+  color: var(--muted);
+}
+.dots span {
+  display: inline-block;
+  font-weight: 900;
+  font-size: 1.25rem;
+  animation: dot 1.3s infinite ease-in-out;
+}
+.dots span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.dots span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes dot {
+  0%,
+  80%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.5;
+  }
+  40% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}

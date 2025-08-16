@@ -1,10 +1,11 @@
 "use client";
+import s from "./LoaderOverlay.module.css";
 
 type Props = {
   title?: string;
   sub?: string;
-  progressCurrent?: number; // NEW
-  progressTotal?: number; // NEW
+  progressCurrent?: number;
+  progressTotal?: number;
 };
 
 export default function LoaderOverlay({
@@ -24,15 +25,14 @@ export default function LoaderOverlay({
 
   return (
     <div
-      className="loader-overlay"
+      className={s.overlay}
       role="alert"
       aria-live="assertive"
       aria-busy="true"
     >
-      <div className="loader-card">
-        {/* Orbiting arrows (brand colors) */}
+      <div className={s.card}>
         <svg
-          className="loader-orbit"
+          className={s.orbit}
           viewBox="0 0 120 120"
           width="112"
           height="112"
@@ -47,7 +47,7 @@ export default function LoaderOverlay({
               refY="5"
               orient="auto"
             >
-              <path d="M0,0 L10,5 L0,10 z" fill="var(--brand-blue)" />
+              <path d="M0,0 L10,5 L0,10 z" fill="currentColor" />
             </marker>
             <marker
               id="arrow-orange"
@@ -57,14 +57,14 @@ export default function LoaderOverlay({
               refY="5"
               orient="auto"
             >
-              <path d="M0,0 L10,5 L0,10 z" fill="var(--brand-orange)" />
+              <path d="M0,0 L10,5 L0,10 z" fill="currentColor" />
             </marker>
           </defs>
 
           {/* CW blue arc */}
-          <g className="animate-cw">
+          <g className={s.animateCw} style={{ color: "var(--brand)" }}>
             <path
-              className="ring blue"
+              className={`${s.ring} ${s.blue}`}
               d="M60 12 A48 48 0 1 1 59.99 12"
               strokeWidth="10"
               strokeLinecap="round"
@@ -74,9 +74,9 @@ export default function LoaderOverlay({
           </g>
 
           {/* CCW orange arc */}
-          <g className="animate-ccw">
+          <g className={s.animateCcw} style={{ color: "#ff8a00" }}>
             <path
-              className="ring orange"
+              className={`${s.ring} ${s.orange}`}
               d="M60 108 A48 48 0 1 0 60.01 108"
               strokeWidth="10"
               strokeLinecap="round"
@@ -85,8 +85,8 @@ export default function LoaderOverlay({
             />
           </g>
 
-          {/* Center “sun” pulse */}
-          <g className="sun-pulse">
+          {/* Center sun + rays */}
+          <g className={s.sunPulse}>
             <circle cx="60" cy="60" r="11" />
             {Array.from({ length: 8 }).map((_, i) => {
               const a = (i * 45 * Math.PI) / 180;
@@ -99,21 +99,20 @@ export default function LoaderOverlay({
           </g>
         </svg>
 
-        <div className="loader-title">{title}</div>
-        <div className="loader-sub">
+        <div className={s.title}>{title}</div>
+        <div className={s.sub}>
           {hasProgress
             ? `${progressCurrent} / ${progressTotal} (${pct}%)`
             : sub}
         </div>
 
-        {/* NEW: linear progress bar */}
         {hasProgress && (
-          <div className="progress">
-            <div className="progress-bar" style={{ width: `${pct}%` }} />
+          <div className={s.progress}>
+            <div className={s.progressBar} style={{ width: `${pct}%` }} />
           </div>
         )}
 
-        <div className="dots" aria-hidden>
+        <div className={s.dots} aria-hidden>
           <span>.</span>
           <span>.</span>
           <span>.</span>

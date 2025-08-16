@@ -1,0 +1,100 @@
+/* components/ResultOverlay.module.css */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  background: rgba(5, 8, 14, 0.55);
+  backdrop-filter: blur(6px);
+}
+
+.card {
+  width: min(560px, 92vw);
+  background: linear-gradient(180deg, var(--surface-1), var(--surface-2));
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
+  padding: 20px;
+  text-align: center;
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-top: 10px;
+}
+.sub {
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+/* icon animation */
+.icon {
+  display: block;
+  margin-inline: auto;
+  filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.25));
+}
+
+.pulseRing {
+  fill: none;
+  stroke-width: 10;
+  opacity: 0.3;
+  transform-origin: 60px 60px;
+  animation: ring 1.6s ease-out infinite;
+}
+.pulseRing.ok {
+  stroke: var(--ok);
+}
+.pulseRing.err {
+  stroke: var(--err);
+}
+
+.resultCircle {
+  fill: transparent;
+  stroke-width: 8;
+}
+.resultCircle.ok {
+  stroke: var(--ok);
+}
+.resultCircle.err {
+  stroke: var(--err);
+}
+
+.check,
+.cross {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 8;
+  stroke-dasharray: 120;
+  stroke-dashoffset: 120; /* start hidden */
+  animation: draw 650ms ease forwards;
+}
+.check {
+  stroke: var(--ok);
+}
+.cross {
+  stroke: var(--err);
+}
+
+@keyframes ring {
+  0% {
+    transform: scale(0.92);
+    opacity: 0.35;
+  }
+  50% {
+    transform: scale(1.02);
+    opacity: 0.55;
+  }
+  100% {
+    transform: scale(0.92);
+    opacity: 0.35;
+  }
+}
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}

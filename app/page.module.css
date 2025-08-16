@@ -1,0 +1,103 @@
+/* app/page.module.css */
+
+/* page wrapper */
+.wrap {
+  max-width: 1040px;
+  margin: 24px auto 48px;
+  padding: 0 16px; /* comfy on mobile */
+}
+
+/* headings */
+.h1 {
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  margin-bottom: 12px;
+}
+.muted {
+  color: var(--muted);
+}
+
+/* cards */
+.card {
+  background: linear-gradient(180deg, var(--surface-1), var(--surface-2));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  padding: 16px;
+  margin-top: 16px;
+}
+
+/* small inner panel */
+.panel {
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  margin-top: 12px;
+}
+
+/* actions row */
+.actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+/* buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(180deg, var(--brand1), var(--brand-601));
+  color: #0b0f17;
+  font-weight: 700;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 10px 16px;
+  transition: transform 0.05s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+.btn:hover {
+  transform: translateY(-1px);
+}
+.secondary {
+  background: transparent;
+  color: var(--text);
+  border-color: var(--border);
+}
+.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* grid: mobile-first (1 col), enhance at 880px+ */
+.grid {
+  display: grid;
+  gap: 14px;
+}
+@media (min-width: 880px) {
+  .gridCols3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* table */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.table thead th {
+  text-align: left;
+  font-size: 13px;
+  letter-spacing: 0.2px;
+  font-weight: 600;
+  color: var(--muted);
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.table tbody td {
+  padding: 10px 0;
+  border-bottom: 1px dashed var(--border);
+}
