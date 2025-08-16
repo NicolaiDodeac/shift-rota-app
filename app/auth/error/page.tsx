@@ -1,19 +1,17 @@
 // app/auth/error/page.tsx
-import { Suspense } from "react";
 import AuthErrorClient from "./AuthErrorClient";
 
-export default function AuthErrorPage({
+type SP = Record<string, string | string[] | undefined>;
+
+export default async function AuthErrorPage({
+  // In Next 15 (React 19), searchParams is a Promise in Server Components
   searchParams,
 }: {
-  searchParams?: { [key: string]: string | string[] | undefined };
+  searchParams?: Promise<SP>;
 }) {
-  const err = (searchParams?.error as string) ?? "AccessDenied";
-  const hinted = (searchParams?.login_hint as string) ?? "";
+  const sp = (await searchParams) ?? {};
+  const err = (sp.error as string) ?? "AccessDenied";
+  const hinted = (sp.login_hint as string) ?? "";
 
-  // Suspense is harmless here and future-proofs the route
-  return (
-    <Suspense fallback={null}>
-      <AuthErrorClient err={err} hinted={hinted} />
-    </Suspense>
-  );
+  return <AuthErrorClient err={err} hinted={hinted} />;
 }
