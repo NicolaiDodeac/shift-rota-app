@@ -1,15 +1,14 @@
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/pages/api/auth/[...nextauth]";
 import { calendarClient, findCalendarIdBySummary } from "@/lib/google";
+import { auth } from "@/auth";
 
 export async function POST(req: Request) {
-  const session = await getServerSession(authOptions as any);
-  if (!session)
-    return NextResponse.json({ message: "Sign in first" }, { status: 401 });
-
+  const session = await auth();
+  if (!session) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
   const { start, end, useDedicatedCalendar, dedicatedCalendarName } =
     await req.json();
   if (!start || !end)

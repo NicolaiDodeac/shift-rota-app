@@ -1,9 +1,8 @@
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+import { auth } from "@/auth";
 
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/pages/api/auth/[...nextauth]";
 import { calendarClient, ensureCalendarId } from "@/lib/google";
 import { z } from "zod";
 
@@ -67,12 +66,9 @@ async function withBackoff<T>(label: string, fn: () => Promise<T>): Promise<T> {
 
 export async function POST(req: Request) {
   try {
-    const session = await getServerSession(authOptions as any);
+    const session = await auth();
     if (!session) {
-      return NextResponse.json(
-        { message: "Sign in with Google first: /api/auth/signin" },
-        { status: 401 }
-      );
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
     const body = await req.json().catch(() => null);
