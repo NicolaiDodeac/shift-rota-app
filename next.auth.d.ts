@@ -1,7 +1,10 @@
-import NextAuth, { DefaultSession } from "next-auth";
+// next-auth.d.ts
+import type { DefaultSession } from "next-auth";
+import type { JWT } from "next-auth/jwt";
 
+// AUGMENTATIONS — this merges with the real next-auth types
 declare module "next-auth" {
-  interface Session {
+  interface Session extends DefaultSession {
     accessToken?: string;
     refreshToken?: string;
     expiresAt?: number;
@@ -17,3 +20,6 @@ declare module "next-auth/jwt" {
     error?: "RefreshAccessTokenError";
   }
 }
+
+// ensure this file is a module (prevents global augmentation pitfalls)
+export {};

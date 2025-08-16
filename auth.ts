@@ -1,8 +1,10 @@
 // auth.ts
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
+import type { JWT } from "next-auth/jwt";
+import type { Account, Session } from "next-auth";
 
-async function refreshAccessToken(token: any) {
+async function refreshAccessToken(token: JWT): Promise<JWT> {
   try {
     if (!token.refreshToken) throw new Error("No refresh token");
     const res = await fetch("https://oauth2.googleapis.com/token", {
@@ -17,6 +19,7 @@ async function refreshAccessToken(token: any) {
     });
     const data = await res.json();
     if (!res.ok) throw data;
+
     return {
       ...token,
       accessToken: data.access_token,
@@ -47,10 +50,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   session: { strategy: "jwt" },
-  trustHost: true, // good on Vercel
-  pages: { error: "/auth/error" }, // keep your friendly error page
+  trustHost: true,
+  pages: { error: "/auth/error" },
   callbacks: {
-    async jwt({ token, account }) {
+    async jwt({
+      token,
+      account,
+    }: {
+      token: JWT;
+      account?: Account | null;
+    }): Promise<JWT> {
       if (account) {
         token.accessToken = account.access_token;
         token.refreshToken = account.refresh_token ?? token.refreshToken;
@@ -63,11 +72,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.expiresAt =
           byExpiresAt ?? byExpiresIn ?? Date.now() + 3600 * 1000;
       }
-      if (token.expiresAt && Date.now() < (token.expiresAt as number) - 60_000)
+      if (
+        token.expiresAt &&
+        Date.now() < (token.expiresAt as number) - 60_000
+      ) {
         return token;
+      }
       return await refreshAccessToken(token);
     },
-    async session({ session, token }) {
+    async session({
+      session,
+      token,
+    }: {
+      session: Session;
+      token: JWT;
+    }): Promise<Session> {
       (session as any).accessToken = token.accessToken;
       (session as any).refreshToken = token.refreshToken;
       (session as any).expiresAt = token.expiresAt;
