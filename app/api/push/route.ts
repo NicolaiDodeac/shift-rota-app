@@ -175,10 +175,6 @@ export async function POST(req: Request) {
             tz,
             startUTC: new Date(ev.startISO),
             endUTC: new Date(ev.endISO),
-            startLocalISO: ev.localStart ?? ev.startISO,
-            endLocalISO: ev.localEnd ?? ev.endISO,
-            kind: ev.type ?? "day",
-            title: ev.title,
             scheduledMin,
           },
           update: {
@@ -186,10 +182,6 @@ export async function POST(req: Request) {
             tz,
             startUTC: new Date(ev.startISO),
             endUTC: new Date(ev.endISO),
-            startLocalISO: ev.localStart ?? ev.startISO,
-            endLocalISO: ev.localEnd ?? ev.endISO,
-            kind: ev.type ?? "day",
-            title: ev.title,
             scheduledMin,
           },
         });
