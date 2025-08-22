@@ -34,15 +34,9 @@ export async function GET() {
       },
     });
 
-    const basicMin = confirmedWeeks.reduce<number>((acc, r) => acc + r.basicMin, 0);
-    const overtimeMin = confirmedWeeks.reduce<number>(
-      (acc, r) => acc + r.overtimeMin,
-      0
-    );
-    const bankedMin = confirmedWeeks.reduce<number>(
-      (acc, r) => acc + r.bankedMin,
-      0
-    );
+    const basicMin = confirmedWeeks.reduce((a, r) => a + r.basicMin, 0);
+    const overtimeMin = confirmedWeeks.reduce((a, r) => a + r.overtimeMin, 0);
+    const bankedMin = confirmedWeeks.reduce((a, r) => a + r.bankedMin, 0);
 
     const targetHours = computeYearTargetHours(
       (settings?.employmentStart ?? cyStart).toISOString(),
@@ -60,7 +54,7 @@ export async function GET() {
       confirmedWeeks: confirmedWeeks.length,
     });
   } catch (error) {
-    console.error("Error in targetHours route:", error);
+    console.error("Error in dashboard route:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

@@ -1,75 +1,69 @@
-// prisma/schema.prisma
-datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL") // pooled (6543) for runtime
-  directUrl = env("DIRECT_URL") // direct (5432) for migrations
-}
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
   provider = "prisma-client-js"
 }
 
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
 model User {
   // We'll set this to auth.uid() after login
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id        String   @id @default(cuid())
   email     String   @unique
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  settings Settings?
-  shifts   ShiftInstance[]
-  weeks    WeekLedger[]
+  // Relations
+  settings       Settings?
+  shiftInstances ShiftInstance[]
+  weekLedgers    WeekLedger[]
 }
 
 model Settings {
-  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId            String   @unique @db.Uuid
+  id                String   @id @default(cuid())
+  userId            String   @unique
   user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tz                String
-  contractYearStart DateTime
-  employmentStart   DateTime
+  tz                String   @default("Europe/London")
+  contractYearStart DateTime @default(dbgenerated("(CURRENT_DATE AT TIME ZONE 'UTC')::date"))
+  employmentStart   DateTime @default(dbgenerated("(CURRENT_DATE AT TIME ZONE 'UTC')::date"))
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 }
 
 model ShiftInstance {
-  id     String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId String @db.Uuid
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  sourceKey  String
-  calendarId String
-
-  tz            String
-  startUTC      DateTime
-  endUTC        DateTime
-  startLocalISO String
-  endLocalISO   String
-  kind          String
-  title         String
-  scheduledMin  Int
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sourceKey    String   // Google Calendar event ID
+  calendarId   String   // Google Calendar ID
+  tz           String   // Timezone of the shift
+  startUTC     DateTime
+  endUTC       DateTime
+  scheduledMin Int      // Duration in minutes
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   @@unique([userId, sourceKey])
-  @@index([userId, startUTC])
 }
 
 model WeekLedger {
-  id     String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId String @db.Uuid
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   weekStartUTC DateTime
   weekEndUTC   DateTime
-
-  scheduledMin Int
-  basicMin     Int
-  overtimeMin  Int // 1.5× already applied
-  bankedMin    Int
-
-  confirmed Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  scheduledMin Int      // Total scheduled minutes for the week
+  basicMin     Int      // Basic hours worked (up to contract)
+  overtimeMin  Int      // Overtime hours worked
+  bankedMin    Int      // Total minutes banked (basic + overtime)
+  confirmed    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   @@unique([userId, weekStartUTC])
-  @@index([userId, weekStartUTC])
 }
