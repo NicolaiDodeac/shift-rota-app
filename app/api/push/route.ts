@@ -166,25 +166,40 @@ export async function POST(req: Request) {
           tz
         );
 
-        await prisma.shiftInstance.upsert({
-          where: { userId_sourceKey: { userId: user.id, sourceKey: ev.id } },
-          create: {
+        // Try to find existing shift instance
+        const existingShift = await prisma.shiftInstance.findFirst({
+          where: {
             userId: user.id,
             sourceKey: ev.id,
-            calendarId,
-            tz,
-            startUTC: new Date(ev.startISO),
-            endUTC: new Date(ev.endISO),
-            scheduledMin,
-          },
-          update: {
-            calendarId,
-            tz,
-            startUTC: new Date(ev.startISO),
-            endUTC: new Date(ev.endISO),
-            scheduledMin,
           },
         });
+
+        if (existingShift) {
+          // Update existing
+          await prisma.shiftInstance.update({
+            where: { id: existingShift.id },
+            data: {
+              calendarId,
+              tz,
+              startUTC: new Date(ev.startISO),
+              endUTC: new Date(ev.endISO),
+              scheduledMin,
+            },
+          });
+        } else {
+          // Create new
+          await prisma.shiftInstance.create({
+            data: {
+              userId: user.id,
+              sourceKey: ev.id,
+              calendarId,
+              tz,
+              startUTC: new Date(ev.startISO),
+              endUTC: new Date(ev.endISO),
+              scheduledMin,
+            },
+          });
+        }
 
         // Gentle pacing between calls
         await sleep(BASE_SLEEP_MS);
