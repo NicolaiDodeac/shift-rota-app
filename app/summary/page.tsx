@@ -18,22 +18,22 @@ export default function SummaryPage() {
   const [refreshing, setRefreshing] = useState(false);
 
   const fetchData = async () => {
-    try {
-      const res = await fetch("/api/summary");
-      const ct = res.headers.get("content-type") || "";
-      const payload = ct.includes("application/json")
-        ? await res.json()
-        : await res.text();
-      if (!res.ok)
-        throw new Error(
-          typeof payload === "string"
-            ? payload
-            : payload?.message || res.statusText
-        );
+      try {
+        const res = await fetch("/api/summary");
+        const ct = res.headers.get("content-type") || "";
+        const payload = ct.includes("application/json")
+          ? await res.json()
+          : await res.text();
+        if (!res.ok)
+          throw new Error(
+            typeof payload === "string"
+              ? payload
+              : payload?.message || res.statusText
+          );
       setData(payload);
-    } catch (e: any) {
-      setErr(e.message || String(e));
-    }
+      } catch (e: any) {
+        setErr(e.message || String(e));
+      }
   };
 
   useEffect(() => {
@@ -230,8 +230,8 @@ export default function SummaryPage() {
                   <th className={styles.tableHeaderCell}>Banked</th>
                   <th className={styles.tableHeaderCell}>Status</th>
                   <th className={styles.tableHeaderCell}>Actions</th>
-                </tr>
-              </thead>
+          </tr>
+        </thead>
               <tbody className={styles.tableBody}>
                 {data.weeks.map((week, index) => (
                   <tr key={week.weekStartISO} className={styles.tableRow}>
@@ -297,10 +297,10 @@ export default function SummaryPage() {
                         </button>
                       )}
                     </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            </tr>
+          ))}
+        </tbody>
+      </table>
           </div>
         </div>
 

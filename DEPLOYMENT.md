@@ -1,5 +1,42 @@
 # 🚀 Deployment Guide - Shift Rota App
 
+## 🚨 **QUICK SETUP (If you're getting 500 errors)**
+
+If your app is deployed but getting database errors, follow these steps:
+
+### 1. Create Supabase Project (5 minutes)
+1. Go to [supabase.com](https://supabase.com)
+2. Create a new project
+3. Save your connection strings
+
+### 2. Add Environment Variables to Vercel
+In your Vercel dashboard → Settings → Environment Variables, add:
+
+```
+DATABASE_URL=postgresql://postgres:[YOUR-PASSWORD]@db.[PROJECT-REF].supabase.co:6543/postgres
+DIRECT_URL=postgresql://postgres:[YOUR-PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres
+NEXTAUTH_URL=https://shift-rota-app-fnp7.vercel.app
+NEXTAUTH_SECRET=your-random-secret-key-here
+```
+
+### 3. Push Schema (Run this locally)
+```bash
+# Set your production environment variables locally
+export DATABASE_URL="your-supabase-connection-string"
+export DIRECT_URL="your-supabase-direct-connection-string"
+
+# Push schema to Supabase
+npx prisma db push
+```
+
+### 4. Redeploy
+```bash
+git commit --allow-empty -m "Trigger redeploy with database"
+git push origin main
+```
+
+---
+
 ## 📋 Prerequisites
 - ✅ Vercel account
 - ✅ Supabase account
@@ -40,7 +77,7 @@ Once your project is created:
 3. Choose "Web application"
 4. Add authorized redirect URIs:
    - `http://localhost:3000/api/auth/callback/google` (for development)
-   - `https://your-app.vercel.app/api/auth/callback/google` (for production)
+   - `https://shift-rota-app-fnp7.vercel.app/api/auth/callback/google` (for production)
 5. Copy the Client ID and Client Secret
 
 ### 3. Create API Key (for Calendar API)
@@ -60,7 +97,7 @@ Add these variables:
 ```
 DATABASE_URL=postgresql://postgres:[YOUR-PASSWORD]@db.[PROJECT-REF].supabase.co:6543/postgres
 DIRECT_URL=postgresql://postgres:[YOUR-PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres
-NEXTAUTH_URL=https://your-app.vercel.app
+NEXTAUTH_URL=https://shift-rota-app-fnp7.vercel.app
 NEXTAUTH_SECRET=your-random-secret-key-here
 GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
@@ -104,7 +141,7 @@ git push origin main
 2. Or manually trigger deployment from Vercel dashboard
 
 ### 3. Verify Deployment
-1. Check your app URL: `https://your-app.vercel.app`
+1. Check your app URL: `https://shift-rota-app-fnp7.vercel.app`
 2. Test authentication
 3. Test shift generation and confirmation
 
