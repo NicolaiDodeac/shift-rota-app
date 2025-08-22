@@ -1,0 +1,75 @@
+// prisma/schema.prisma
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL") // pooled (6543) for runtime
+  directUrl = env("DIRECT_URL") // direct (5432) for migrations
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  // We'll set this to auth.uid() after login
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email     String   @unique
+  createdAt DateTime @default(now())
+
+  settings Settings?
+  shifts   ShiftInstance[]
+  weeks    WeekLedger[]
+}
+
+model Settings {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId            String   @unique @db.Uuid
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tz                String
+  contractYearStart DateTime
+  employmentStart   DateTime
+}
+
+model ShiftInstance {
+  id     String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId String @db.Uuid
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  sourceKey  String
+  calendarId String
+
+  tz            String
+  startUTC      DateTime
+  endUTC        DateTime
+  startLocalISO String
+  endLocalISO   String
+  kind          String
+  title         String
+  scheduledMin  Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, sourceKey])
+  @@index([userId, startUTC])
+}
+
+model WeekLedger {
+  id     String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId String @db.Uuid
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  weekStartUTC DateTime
+  weekEndUTC   DateTime
+
+  scheduledMin Int
+  basicMin     Int
+  overtimeMin  Int // 1.5× already applied
+  bankedMin    Int
+
+  confirmed Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, weekStartUTC])
+  @@index([userId, weekStartUTC])
+}

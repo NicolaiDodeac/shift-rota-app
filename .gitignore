@@ -23,3 +23,5 @@ pnpm-debug.log*
 *.swp
 .vscode/*
 !.vscode/extensions.json
+
+/generated/prisma
