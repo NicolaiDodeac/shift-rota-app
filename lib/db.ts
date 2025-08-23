@@ -25,3 +25,5 @@ if (process.env.NODE_ENV === "production") {
   // Ensure connection is established
   await prisma.$connect();
 }
+
+// Supabase connection is working - no additional middleware needed

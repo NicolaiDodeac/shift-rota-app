@@ -1,5 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
   provider = "prisma-client-js"
@@ -11,13 +9,10 @@ datasource db {
 }
 
 model User {
-  // We'll set this to auth.uid() after login
   id        String   @id @default(cuid())
   email     String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  // Relations
   settings       Settings?
   shiftInstances ShiftInstance[]
   weekLedgers    WeekLedger[]
@@ -38,15 +33,14 @@ model ShiftInstance {
   id           String   @id @default(cuid())
   userId       String
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  sourceKey    String   // Google Calendar event ID
-  calendarId   String   // Google Calendar ID
-  tz           String   // Timezone of the shift
+  sourceKey    String
+  calendarId   String
+  tz           String
   startUTC     DateTime
   endUTC       DateTime
-  scheduledMin Int      // Duration in minutes
+  scheduledMin Int
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
-
   @@unique([userId, sourceKey])
 }
 
@@ -56,13 +50,12 @@ model WeekLedger {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   weekStartUTC DateTime
   weekEndUTC   DateTime
-  scheduledMin Int      // Total scheduled minutes for the week
-  basicMin     Int      // Basic hours worked (up to contract)
-  overtimeMin  Int      // Overtime hours worked
-  bankedMin    Int      // Total minutes banked (basic + overtime)
+  scheduledMin Int
+  basicMin     Int
+  overtimeMin  Int
+  bankedMin    Int
   confirmed    Boolean  @default(false)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
-
   @@unique([userId, weekStartUTC])
 }
