@@ -623,9 +623,7 @@ export default function Page() {
       {isPushing && (
         <LoaderOverlay
           title="Syncing to Google Calendar…"
-          sub="Please keep this tab open."
-          progressCurrent={progress?.current}
-          progressTotal={progress?.total}
+          subtitle="Please keep this tab open."
         />
       )}
       {result && (
