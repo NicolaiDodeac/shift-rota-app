@@ -51,10 +51,21 @@ export async function GET() {
       balanceHours: +(targetHours - bankedMin / 60).toFixed(1),
       confirmedWeeks: confirmedWeeks.length,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error in dashboard route:", error);
+    console.error("Error stack:", error?.stack);
+    console.error("Error details:", {
+      message: error?.message,
+      code: error?.code,
+      name: error?.name
+    });
     return NextResponse.json(
-      { message: "Internal server error" },
+      { 
+        message: "Internal server error",
+        details: String(error?.message || error),
+        errorType: error?.name,
+        errorCode: error?.code
+      },
       { status: 500 }
     );
   }

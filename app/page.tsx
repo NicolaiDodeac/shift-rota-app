@@ -61,10 +61,13 @@ export default function Page() {
   }
 
   async function pushToGoogle() {
+    console.log("pushToGoogle called, status:", status);
     if (status !== "authenticated") {
+      console.log("Not authenticated, redirecting to sign in");
       await signIn("google", { callbackUrl: window.location.href });
       return;
     }
+    console.log("Authenticated, starting push process");
     setIsPushing(true);
     setResult(null);
     setProgress({ current: 0, total: events.length });
@@ -73,7 +76,10 @@ export default function Page() {
 
     try {
       const batches = chunk(events, CHUNK_SIZE);
+      console.log("Created", batches.length, "batches");
       for (const part of batches) {
+        console.log("Making request for batch with", part.length, "events");
+        console.log("About to make fetch request to /api/push");
         const res = await fetch("/api/push", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -85,6 +91,7 @@ export default function Page() {
             dedicatedCalendarColorId: dedicatedColorId,
           }),
         });
+        console.log("Fetch response received:", res.status, res.statusText);
 
         if (res.status === 401) {
           await signIn("google", { callbackUrl: window.location.href });

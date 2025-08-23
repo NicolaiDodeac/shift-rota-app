@@ -21,13 +21,22 @@ export default function DashboardPage() {
   useEffect(() => {
     (async () => {
       try {
+        console.log("Fetching dashboard data...");
         const res = await fetch("/api/dashboard");
+        console.log("Dashboard response status:", res.status);
+        console.log("Dashboard response ok:", res.ok);
+        
         if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
+          const errorText = await res.text();
+          console.error("Dashboard error response:", errorText);
+          throw new Error(`HTTP error! status: ${res.status} - ${errorText}`);
         }
+        
         const dashboardData = await res.json();
+        console.log("Dashboard data received:", dashboardData);
         setData(dashboardData);
       } catch (err) {
+        console.error("Dashboard fetch error:", err);
         setError(err instanceof Error ? err.message : 'Failed to load dashboard');
       } finally {
         setLoading(false);

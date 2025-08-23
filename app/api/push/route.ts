@@ -67,6 +67,11 @@ async function withBackoff<T>(label: string, fn: () => Promise<T>): Promise<T> {
   }
 }
 
+export async function GET(req: Request) {
+  console.log("GET /api/push called");
+  return NextResponse.json({ message: "Push route is working" });
+}
+
 export async function POST(req: Request) {
   console.log("POST /api/push called");
   console.log("Request method:", req.method);
