@@ -18,8 +18,15 @@ export async function GET(req: Request) {
     const url = new URL(req.url);
     const weeksBack = Number(url.searchParams.get("weeks") || 12);
 
-    const settings = await getOrCreateUserSettings(user.id);
-    const tz = settings.tz;
+    // Try to get settings, fallback to default if not found
+    let settings;
+    let tz = "Europe/London";
+    try {
+      settings = await getOrCreateUserSettings(user.id);
+      tz = settings.tz;
+    } catch (error) {
+      console.log("Settings not found, using default timezone:", tz);
+    }
 
     const end = DateTime.now().setZone(tz).endOf("day");
     const start = end.minus({ weeks: weeksBack }).startOf("day");
@@ -73,8 +80,19 @@ export async function GET(req: Request) {
     return NextResponse.json({ tz, weeks: merged });
   } catch (err: any) {
     console.error("/api/summary error", err);
+    console.error("Error stack:", err?.stack);
+    console.error("Error details:", {
+      message: err?.message,
+      code: err?.code,
+      name: err?.name
+    });
     return NextResponse.json(
-      { message: "Server error", details: String(err?.message || err) },
+      { 
+        message: "Server error", 
+        details: String(err?.message || err),
+        errorType: err?.name,
+        errorCode: err?.code
+      },
       { status: 500 }
     );
   }
