@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
-import { getOrCreateUserByEmail } from "@/lib/users";
+import { getOrCreateUserByEmail, getOrCreateUserSettings } from "@/lib/users";
 import { DateTime } from "luxon";
 import { buildWeekStatsFromShifts } from "@/lib/annualised";
 
@@ -18,10 +18,8 @@ export async function GET(req: Request) {
     const url = new URL(req.url);
     const weeksBack = Number(url.searchParams.get("weeks") || 12);
 
-    const settings = await prisma.settings.findUnique({
-      where: { userId: user.id },
-    });
-    const tz = settings?.tz || "Europe/London";
+    const settings = await getOrCreateUserSettings(user.id);
+    const tz = settings.tz;
 
     const end = DateTime.now().setZone(tz).endOf("day");
     const start = end.minus({ weeks: weeksBack }).startOf("day");

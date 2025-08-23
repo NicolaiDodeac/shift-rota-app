@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
-import { getOrCreateUserByEmail } from "@/lib/users";
+import { getOrCreateUserByEmail, getOrCreateUserSettings } from "@/lib/users";
 import { currentContractYearStart } from "@/lib/time";
 import { computeYearTargetHours } from "@/lib/annualised";
 
@@ -14,11 +14,9 @@ export async function GET() {
 
     const email = session.user.email;
     const user = await getOrCreateUserByEmail(email);
-    const settings = await prisma.settings.findUnique({
-      where: { userId: user.id },
-    });
+    const settings = await getOrCreateUserSettings(user.id);
 
-    const tz = settings?.tz || "Europe/London";
+    const tz = settings.tz;
     const cyStart = settings?.contractYearStart
       ? settings.contractYearStart
       : currentContractYearStart(tz).toUTC().toJSDate();
