@@ -16,9 +16,12 @@ export default function SummaryPage() {
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState<{ [key: string]: boolean }>({});
   const [refreshing, setRefreshing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const fetchData = async () => {
       try {
+        setIsLoading(true);
+        setErr(null);
         const res = await fetch("/api/summary");
         const ct = res.headers.get("content-type") || "";
         const payload = ct.includes("application/json")
@@ -33,6 +36,8 @@ export default function SummaryPage() {
       setData(payload);
       } catch (e: any) {
         setErr(e.message || String(e));
+      } finally {
+        setIsLoading(false);
       }
   };
 
@@ -90,6 +95,20 @@ export default function SummaryPage() {
     });
   };
 
+  if (isLoading) {
+    return (
+      <main className={styles.container}>
+        <div className={styles.wrapper}>
+          <div className={styles.loadingContainer}>
+            <h1 className={styles.loadingTitle}>Loading Summary...</h1>
+            <div className={styles.loadingSpinner}></div>
+            <p className={styles.loadingText}>Please wait while we fetch your data...</p>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   if (err)
     return (
       <main className={styles.container}>
@@ -97,6 +116,15 @@ export default function SummaryPage() {
           <div className={styles.errorContainer}>
             <h1 className={styles.errorTitle}>Summary Error</h1>
             <p className={styles.errorMessage}>{err}</p>
+            <button 
+              onClick={() => {
+                setErr(null);
+                fetchData();
+              }}
+              className={styles.retryButton}
+            >
+              Retry
+            </button>
           </div>
         </div>
       </main>
