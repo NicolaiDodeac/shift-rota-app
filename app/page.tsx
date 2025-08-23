@@ -4,12 +4,13 @@ import { useMemo, useState } from "react";
 import { signIn, useSession } from "next-auth/react";
 import LoaderOverlay from "@/components/LoaderOverlay";
 import ResultOverlay from "@/components/ResultOverlay";
+import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
 import {
   generateShiftEvents,
   type ShiftConfig,
   type ShiftEvent,
 } from "@/lib/generator";
-import s from "./page.module.css";
 
 const todayISO = new Date().toISOString().slice(0, 10);
 const CHUNK_SIZE = 25;
@@ -215,191 +216,312 @@ export default function Page() {
   }
 
   return (
-    <div className={s.wrap}>
-      <h1 className={s.h1}>4-on-4-off Shift Rota</h1>
+    <div className="container">
+      <h1>4-on-4-off Shift Rota</h1>
 
       {/* gentle sign-in nudge */}
       {status !== "authenticated" && (
-        <section className={s.card}>
-          <p>
-            <b>Sign in to sync with Google Calendar.</b>
+        <Card padding="md" elevation="md">
+          <p style={{ marginBottom: 'var(--space-md)' }}>
+            <strong>Sign in to sync with Google Calendar.</strong>
           </p>
-          <div className={s.actions}>
-            <button
-              className={s.btn}
-              onClick={() =>
-                signIn("google", { callbackUrl: window.location.href })
-              }
-            >
+          <div style={{ display: 'flex', gap: 'var(--space-md)', flexWrap: 'wrap' }}>
+            <Button variant="primary" onClick={() => signIn("google", { callbackUrl: window.location.href })}>
               Sign in with Google
-            </button>
-            <a className={`${s.btn} ${s.secondary}`} href="/auth/request">
-              Not on the tester list? Request access
-            </a>
+            </Button>
+            <Button variant="secondary" asChild>
+              <a href="/auth/request">Not on the tester list? Request access</a>
+            </Button>
           </div>
-        </section>
+        </Card>
       )}
 
-      <section className={s.card}>
-        <div className={`${s.grid} ${s.gridCols3}`}>
+      <Card padding="lg" elevation="md">
+        <div style={{ 
+          display: 'grid', 
+          gap: 'var(--space-md)',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))'
+        }}>
           <div>
-            <label>Timezone</label>
+            <label style={{ display: 'block', marginBottom: 'var(--space-xs)', fontWeight: 500 }}>Timezone</label>
             <input
               type="text"
               value={cfg.timezone}
               onChange={(e) => setCfg({ ...cfg, timezone: e.target.value })}
+              style={{
+                width: '100%',
+                padding: 'var(--space-sm)',
+                border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-md)',
+                backgroundColor: 'var(--color-surface)',
+                color: 'var(--color-text)',
+                fontSize: 'var(--font-size-sm)'
+              }}
             />
           </div>
           <div>
-            <label>Season Start</label>
+            <label style={{ display: 'block', marginBottom: 'var(--space-xs)', fontWeight: 500 }}>Season Start</label>
             <input
               type="date"
               value={cfg.rangeStart}
               onChange={(e) => setCfg({ ...cfg, rangeStart: e.target.value })}
+              style={{
+                width: '100%',
+                padding: 'var(--space-sm)',
+                border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-md)',
+                backgroundColor: 'var(--color-surface)',
+                color: 'var(--color-text)',
+                fontSize: 'var(--font-size-sm)'
+              }}
             />
           </div>
           <div>
-            <label>Season End</label>
+            <label style={{ display: 'block', marginBottom: 'var(--space-xs)', fontWeight: 500 }}>Season End</label>
             <input
               type="date"
               value={cfg.rangeEnd}
               onChange={(e) => setCfg({ ...cfg, rangeEnd: e.target.value })}
+              style={{
+                width: '100%',
+                padding: 'var(--space-sm)',
+                border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-md)',
+                backgroundColor: 'var(--color-surface)',
+                color: 'var(--color-text)',
+                fontSize: 'var(--font-size-sm)'
+              }}
             />
           </div>
           <div>
-            <label>Anchor ON Day (first of a 4-on block)</label>
+            <label style={{ display: 'block', marginBottom: 'var(--space-xs)', fontWeight: 500 }}>Anchor ON Day (first of a 4-on block)</label>
             <input
               type="date"
               value={cfg.anchorOnDate}
               onChange={(e) => setCfg({ ...cfg, anchorOnDate: e.target.value })}
+              style={{
+                width: '100%',
+                padding: 'var(--space-sm)',
+                border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-md)',
+                backgroundColor: 'var(--color-surface)',
+                color: 'var(--color-text)',
+                fontSize: 'var(--font-size-sm)'
+              }}
             />
           </div>
           <div>
-            <label>Rotation starts as</label>
+            <label style={{ display: 'block', marginBottom: 'var(--space-xs)', fontWeight: 500 }}>Rotation starts as</label>
             <select
               value={cfg.startMode}
-              onChange={(e) =>
-                setCfg({ ...cfg, startMode: e.target.value as any })
-              }
+              onChange={(e) => setCfg({ ...cfg, startMode: e.target.value as any })}
+              style={{
+                width: '100%',
+                padding: 'var(--space-sm)',
+                border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-md)',
+                backgroundColor: 'var(--color-surface)',
+                color: 'var(--color-text)',
+                fontSize: 'var(--font-size-sm)'
+              }}
             >
               <option value="day">Day</option>
               <option value="night">Night</option>
             </select>
           </div>
           <div>
-            <label>Rotation rule</label>
+            <label style={{ display: 'block', marginBottom: 'var(--space-xs)', fontWeight: 500 }}>Rotation rule</label>
             <select
               value={cfg.rotationMode ?? "twoBlock"}
-              onChange={(e) =>
-                setCfg({ ...cfg, rotationMode: e.target.value as any })
-              }
+              onChange={(e) => setCfg({ ...cfg, rotationMode: e.target.value as any })}
+              style={{
+                width: '100%',
+                padding: 'var(--space-sm)',
+                border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-md)',
+                backgroundColor: 'var(--color-surface)',
+                color: 'var(--color-text)',
+                fontSize: 'var(--font-size-sm)'
+              }}
             >
               <option value="twoBlock">2× 4-on → flip (recommended)</option>
               <option value="fortnight">Flip every N weeks</option>
             </select>
           </div>
           <div>
-            <label>Day shift starts</label>
+            <label style={{ display: 'block', marginBottom: 'var(--space-xs)', fontWeight: 500 }}>Day shift starts</label>
             <input
               type="time"
               value={cfg.dayStart}
               onChange={(e) => setCfg({ ...cfg, dayStart: e.target.value })}
+              style={{
+                width: '100%',
+                padding: 'var(--space-sm)',
+                border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-md)',
+                backgroundColor: 'var(--color-surface)',
+                color: 'var(--color-text)',
+                fontSize: 'var(--font-size-sm)'
+              }}
             />
           </div>
           <div>
-            <label>Night shift starts</label>
+            <label style={{ display: 'block', marginBottom: 'var(--space-xs)', fontWeight: 500 }}>Night shift starts</label>
             <input
               type="time"
               value={cfg.nightStart}
               onChange={(e) => setCfg({ ...cfg, nightStart: e.target.value })}
+              style={{
+                width: '100%',
+                padding: 'var(--space-sm)',
+                border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-md)',
+                backgroundColor: 'var(--color-surface)',
+                color: 'var(--color-text)',
+                fontSize: 'var(--font-size-sm)'
+              }}
             />
           </div>
           <div>
-            <label>Hours per shift</label>
+            <label style={{ display: 'block', marginBottom: 'var(--space-xs)', fontWeight: 500 }}>Hours per shift</label>
             <input
               type="number"
               min={1}
               value={cfg.hoursPerShift}
-              onChange={(e) =>
-                setCfg({ ...cfg, hoursPerShift: Number(e.target.value) })
-              }
+              onChange={(e) => setCfg({ ...cfg, hoursPerShift: Number(e.target.value) })}
+              style={{
+                width: '100%',
+                padding: 'var(--space-sm)',
+                border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-md)',
+                backgroundColor: 'var(--color-surface)',
+                color: 'var(--color-text)',
+                fontSize: 'var(--font-size-sm)'
+              }}
             />
           </div>
           <div>
-            <label>Day title</label>
+            <label style={{ display: 'block', marginBottom: 'var(--space-xs)', fontWeight: 500 }}>Day title</label>
             <input
               type="text"
               value={cfg.dayTitle}
               onChange={(e) => setCfg({ ...cfg, dayTitle: e.target.value })}
+              style={{
+                width: '100%',
+                padding: 'var(--space-sm)',
+                border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-md)',
+                backgroundColor: 'var(--color-surface)',
+                color: 'var(--color-text)',
+                fontSize: 'var(--font-size-sm)'
+              }}
             />
           </div>
           <div>
-            <label>Night title</label>
+            <label style={{ display: 'block', marginBottom: 'var(--space-xs)', fontWeight: 500 }}>Night title</label>
             <input
               type="text"
               value={cfg.nightTitle}
               onChange={(e) => setCfg({ ...cfg, nightTitle: e.target.value })}
+              style={{
+                width: '100%',
+                padding: 'var(--space-sm)',
+                border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-md)',
+                backgroundColor: 'var(--color-surface)',
+                color: 'var(--color-text)',
+                fontSize: 'var(--font-size-sm)'
+              }}
             />
           </div>
           <div>
-            <label>Location</label>
+            <label style={{ display: 'block', marginBottom: 'var(--space-xs)', fontWeight: 500 }}>Location</label>
             <input
               type="text"
               value={cfg.location}
               onChange={(e) => setCfg({ ...cfg, location: e.target.value })}
+              style={{
+                width: '100%',
+                padding: 'var(--space-sm)',
+                border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-md)',
+                backgroundColor: 'var(--color-surface)',
+                color: 'var(--color-text)',
+                fontSize: 'var(--font-size-sm)'
+              }}
             />
           </div>
         </div>
 
-        <div className={s.panel}>
-          <div
-            style={{
-              display: "flex",
-              gap: 12,
-              alignItems: "center",
-              flexWrap: "wrap",
-            }}
-          >
-            <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <div style={{
+          backgroundColor: 'var(--color-surface-hover)',
+          border: '1px solid var(--color-border)',
+          borderRadius: 'var(--radius-lg)',
+          padding: 'var(--space-md)',
+          marginTop: 'var(--space-md)'
+        }}>
+          <div style={{
+            display: "flex",
+            gap: "var(--space-md)",
+            alignItems: "center",
+            flexWrap: "wrap",
+          }}>
+            <label style={{ display: "flex", alignItems: "center", gap: "var(--space-sm)" }}>
               <input
                 type="checkbox"
                 checked={cfg.lockTypePerCluster ?? true}
-                onChange={(e) =>
-                  setCfg({ ...cfg, lockTypePerCluster: e.target.checked })
-                }
+                onChange={(e) => setCfg({ ...cfg, lockTypePerCluster: e.target.checked })}
+                style={{ width: '1rem', height: '1rem' }}
               />
               Lock Day/Night per 4-on (recommended)
             </label>
 
-            <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <label style={{ display: "flex", alignItems: "center", gap: "var(--space-sm)" }}>
               <input
                 type="checkbox"
                 checked={useDedicated}
                 onChange={(e) => setUseDedicated(e.target.checked)}
+                style={{ width: '1rem', height: '1rem' }}
               />
-              Use dedicated “Shift Rota” calendar
+              Use dedicated "Shift Rota" calendar
             </label>
 
             {useDedicated && (
               <>
                 <label>
-                  <span className={s.muted} style={{ fontSize: 12 }}>
+                  <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', display: 'block', marginBottom: 'var(--space-xs)' }}>
                     Calendar name
                   </span>
                   <input
                     type="text"
                     value={dedicatedName}
                     onChange={(e) => setDedicatedName(e.target.value)}
+                    style={{
+                      padding: 'var(--space-xs) var(--space-sm)',
+                      border: '1px solid var(--color-border)',
+                      borderRadius: 'var(--radius-sm)',
+                      backgroundColor: 'var(--color-surface)',
+                      color: 'var(--color-text)',
+                      fontSize: 'var(--font-size-sm)'
+                    }}
                   />
                 </label>
                 <label>
-                  <span className={s.muted} style={{ fontSize: 12 }}>
+                  <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', display: 'block', marginBottom: 'var(--space-xs)' }}>
                     Color ID
                   </span>
                   <input
                     type="number"
                     value={dedicatedColorId}
                     onChange={(e) => setDedicatedColorId(e.target.value)}
+                    style={{
+                      padding: 'var(--space-xs) var(--space-sm)',
+                      border: '1px solid var(--color-border)',
+                      borderRadius: 'var(--radius-sm)',
+                      backgroundColor: 'var(--color-surface)',
+                      color: 'var(--color-text)',
+                      fontSize: 'var(--font-size-sm)'
+                    }}
                   />
                 </label>
               </>
@@ -407,62 +529,95 @@ export default function Page() {
           </div>
         </div>
 
-        <div className={s.actions}>
-          <button className={s.btn} onClick={pushToGoogle} disabled={isPushing}>
+        <div style={{ display: 'flex', gap: 'var(--space-md)', flexWrap: 'wrap', marginTop: 'var(--space-md)' }}>
+          <Button variant="primary" onClick={pushToGoogle} disabled={isPushing}>
             {isPushing ? "Syncing…" : "Add to Google Calendar"}
-          </button>
+          </Button>
 
-          <a
-            className={`${s.btn} ${s.secondary} ${isPushing ? s.disabled : ""}`}
-            href={`/api/ics?${qs}`}
-            onClick={(e) => isPushing && e.preventDefault()}
-            aria-disabled={isPushing}
-            rel="noreferrer"
-            target="_blank"
-          >
-            Get ICS feed (subscribe)
-          </a>
+          <Button variant="secondary" asChild disabled={isPushing}>
+            <a href={`/api/ics?${qs}`} rel="noreferrer" target="_blank">
+              Get ICS feed (subscribe)
+            </a>
+          </Button>
 
-          <button
-            className={`${s.btn} ${s.secondary}`}
-            onClick={deleteFromGoogle}
-            disabled={isPushing}
-          >
+          <Button variant="secondary" onClick={deleteFromGoogle} disabled={isPushing}>
             {isPushing ? "Working…" : "Delete season (Google)"}
-          </button>
+          </Button>
         </div>
-      </section>
+      </Card>
 
-      <section className={s.card}>
-        <h3 style={{ fontSize: 22, marginBottom: 6 }}>
+      <Card padding="lg" elevation="md">
+        <h3 style={{ fontSize: 'var(--font-size-xl)', marginBottom: 'var(--space-sm)' }}>
           Preview ({events.length} shifts)
         </h3>
-        <table className={s.table}>
-          <thead>
-            <tr>
-              <th>Start (local)</th>
-              <th>End (local)</th>
-              <th>Type</th>
-              <th>Title</th>
-            </tr>
-          </thead>
-          <tbody>
-            {events.slice(0, 100).map((ev) => (
-              <tr key={ev.id}>
-                <td>{new Date(ev.localStart).toLocaleString()}</td>
-                <td>{new Date(ev.localEnd).toLocaleString()}</td>
-                <td>{ev.type}</td>
-                <td>{ev.title}</td>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{
+            width: '100%',
+            borderCollapse: 'collapse',
+            fontSize: 'var(--font-size-sm)'
+          }}>
+            <thead>
+              <tr>
+                <th style={{
+                  textAlign: 'left',
+                  fontSize: 'var(--font-size-xs)',
+                  fontWeight: 600,
+                  color: 'var(--color-text-secondary)',
+                  paddingBottom: 'var(--space-sm)',
+                  borderBottom: '1px solid var(--color-border)'
+                }}>Start (local)</th>
+                <th style={{
+                  textAlign: 'left',
+                  fontSize: 'var(--font-size-xs)',
+                  fontWeight: 600,
+                  color: 'var(--color-text-secondary)',
+                  paddingBottom: 'var(--space-sm)',
+                  borderBottom: '1px solid var(--color-border)'
+                }}>End (local)</th>
+                <th style={{
+                  textAlign: 'left',
+                  fontSize: 'var(--font-size-xs)',
+                  fontWeight: 600,
+                  color: 'var(--color-text-secondary)',
+                  paddingBottom: 'var(--space-sm)',
+                  borderBottom: '1px solid var(--color-border)'
+                }}>Type</th>
+                <th style={{
+                  textAlign: 'left',
+                  fontSize: 'var(--font-size-xs)',
+                  fontWeight: 600,
+                  color: 'var(--color-text-secondary)',
+                  paddingBottom: 'var(--space-sm)',
+                  borderBottom: '1px solid var(--color-border)'
+                }}>Title</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {events.slice(0, 100).map((ev) => (
+                <tr key={ev.id}>
+                  <td style={{ padding: 'var(--space-sm) 0', borderBottom: '1px dashed var(--color-border)' }}>
+                    {new Date(ev.localStart).toLocaleString()}
+                  </td>
+                  <td style={{ padding: 'var(--space-sm) 0', borderBottom: '1px dashed var(--color-border)' }}>
+                    {new Date(ev.localEnd).toLocaleString()}
+                  </td>
+                  <td style={{ padding: 'var(--space-sm) 0', borderBottom: '1px dashed var(--color-border)' }}>
+                    {ev.type}
+                  </td>
+                  <td style={{ padding: 'var(--space-sm) 0', borderBottom: '1px dashed var(--color-border)' }}>
+                    {ev.title}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
         {events.length > 100 && (
-          <p className={s.muted} style={{ marginTop: 8 }}>
+          <p style={{ color: 'var(--color-text-secondary)', marginTop: 'var(--space-sm)', fontSize: 'var(--font-size-sm)' }}>
             Showing first 100…
           </p>
         )}
-      </section>
+      </Card>
 
       {/* Overlays */}
       {isPushing && (

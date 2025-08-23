@@ -1,10 +1,26 @@
 // app/api/summary/route.ts
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { prisma } from "@/lib/db";
+import { prisma, resetPrismaClient } from "@/lib/db";
 import { getOrCreateUserByEmail, getOrCreateUserSettings } from "@/lib/users";
 import { DateTime } from "luxon";
 import { buildWeekStatsFromShifts } from "@/lib/annualised";
+
+// Helper function to handle Prisma connection errors
+async function withConnectionRetry<T>(operation: () => Promise<T>): Promise<T> {
+  try {
+    return await operation();
+  } catch (error: any) {
+    // If it's a connection error, try resetting the connection
+    if (error?.message?.includes('prepared statement') || error?.code === '26000') {
+      console.log('Resetting Prisma client due to connection error...');
+      await resetPrismaClient();
+      return await operation();
+    } else {
+      throw error;
+    }
+  }
+}
 
 export async function GET(req: Request) {
   try {
@@ -13,7 +29,21 @@ export async function GET(req: Request) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
     const email = session.user.email;
-    const user = await getOrCreateUserByEmail(email);
+    
+    // Try to get user with connection reset on error
+    let user;
+    try {
+      user = await getOrCreateUserByEmail(email);
+    } catch (dbError: any) {
+      // If it's a connection error, try resetting the connection
+      if (dbError?.message?.includes('prepared statement') || dbError?.code === '26000') {
+        console.log('Resetting Prisma client due to connection error...');
+        await resetPrismaClient();
+        user = await getOrCreateUserByEmail(email);
+      } else {
+        throw dbError;
+      }
+    }
 
     const url = new URL(req.url);
     const weeksBack = Number(url.searchParams.get("weeks") || 12);
@@ -31,32 +61,42 @@ export async function GET(req: Request) {
     const end = DateTime.now().setZone(tz).endOf("day");
     const start = end.minus({ weeks: weeksBack }).startOf("day");
 
-    const rows = await prisma.shiftInstance.findMany({
-      where: {
-        userId: user.id,
-        startUTC: {
-          gte: start.toUTC().toJSDate(),
-          lte: end.toUTC().toJSDate(),
+    // Use connection retry for the main query
+    const rows = await withConnectionRetry(async () => {
+      return await prisma.shiftInstance.findMany({
+        where: {
+          userId: user.id,
+          startUTC: {
+            gte: start.toUTC().toJSDate(),
+            lte: end.toUTC().toJSDate(),
+          },
         },
-      },
-      orderBy: { startUTC: "asc" },
-      select: { startUTC: true, endUTC: true, tz: true, scheduledMin: true },
+        orderBy: { startUTC: "asc" },
+        select: { startUTC: true, endUTC: true, tz: true, scheduledMin: true },
+      });
     });
 
-    const weeks = buildWeekStatsFromShifts(rows, tz);
+    const weeks = buildWeekStatsFromShifts(
+      rows, 
+      tz, 
+      settings?.basicHoursCap ?? 48,
+      settings?.overtimeMultiplier ?? 1.5
+    );
 
-    // overlay confirmed snapshots
+    // overlay confirmed snapshots with connection retry
     const weekStartDates = weeks.map((w) => new Date(w.weekStartISO));
-    const snaps = await prisma.weekLedger.findMany({
-      where: { userId: user.id, weekStartUTC: { in: weekStartDates } },
-      select: {
-        weekStartUTC: true,
-        scheduledMin: true,
-        basicMin: true,
-        overtimeMin: true,
-        bankedMin: true,
-        confirmed: true,
-      },
+    const snaps = await withConnectionRetry(async () => {
+      return await prisma.weekLedger.findMany({
+        where: { userId: user.id, weekStartUTC: { in: weekStartDates } },
+        select: {
+          weekStartUTC: true,
+          scheduledMin: true,
+          basicMin: true,
+          overtimeMin: true,
+          bankedMin: true,
+          confirmed: true,
+        },
+      });
     });
 
     type Snap = (typeof snaps)[number];

@@ -20,12 +20,16 @@ export type WeekStats = {
   days: { date: string; minutes: number }[];
 };
 
-// 48h basic cap; over @ 1.5x
-export function splitWeeklyBanking(totalMinutes: number) {
-  const maxBasic = 48 * 60;
+// Split weekly hours based on settings
+export function splitWeeklyBanking(
+  totalMinutes: number, 
+  basicHoursCap: number = 48, 
+  overtimeMultiplier: number = 1.5
+) {
+  const maxBasic = basicHoursCap * 60;
   const basic = Math.min(totalMinutes, maxBasic);
   const over = Math.max(0, totalMinutes - maxBasic);
-  const overtime = Math.round(over * 1.5);
+  const overtime = Math.round(over * overtimeMultiplier);
   const banked = basic + overtime;
   return { basic, overtime, banked };
 }
@@ -33,13 +37,15 @@ export function splitWeeklyBanking(totalMinutes: number) {
 // Build WeekStats from raw ShiftInstance rows (already saved in DB)
 export function buildWeekStatsFromShifts(
   shifts: ShiftRow[],
-  tz: string
+  tz: string,
+  basicHoursCap: number = 48,
+  overtimeMultiplier: number = 1.5
 ): WeekStats[] {
   const buckets = new Map<
     string,
     { minutes: number; days: Map<string, number> }
   >();
-
+  
   for (const s of shifts) {
     const d = DateTime.fromJSDate(s.startUTC).setZone(tz);
     const sun = startOfWeekSunday(d).toISODate()!;
@@ -56,7 +62,7 @@ export function buildWeekStatsFromShifts(
   )) {
     const weekStart = DateTime.fromISO(sun, { zone: tz }).startOf("day");
     const weekEnd = weekStart.plus({ days: 6 }).endOf("day");
-    const { basic, overtime, banked } = splitWeeklyBanking(b.minutes);
+    const { basic, overtime, banked } = splitWeeklyBanking(b.minutes, basicHoursCap, overtimeMultiplier);
 
     out.push({
       tz,
@@ -75,24 +81,53 @@ export function buildWeekStatsFromShifts(
   return out;
 }
 
-// Annualised target
-// After 52 weeks' service at contract-year start -> 1878 h
-// First year -> 1920 h; if starting mid contract-year, prorate by remaining weeks.
+// Enhanced annualised target calculation based on business rules
 export function computeYearTargetHours(
   employmentStartISO: string,
-  contractYearStartISO: string
+  contractYearStartISO: string,
+  settings?: {
+    contractedWeeklyHours: number;
+    holidayWeeksFirstYear: number;
+    holidayWeeksSubsequent: number;
+    bankHolidayHours: number;
+    serviceLengthWeeks: number;
+    useFirstYearRates: boolean;
+  }
 ) {
   const start = DateTime.fromISO(employmentStartISO).startOf("day");
   const cyStart = DateTime.fromISO(contractYearStartISO).startOf("day");
-  const weeksServiceAtCY = Math.floor(cyStart.diff(start, "weeks").weeks);
+  
+  // Use settings if provided, otherwise use defaults
+  const weeklyHours = settings?.contractedWeeklyHours ?? 42;
+  const firstYearHolidayWeeks = settings?.holidayWeeksFirstYear ?? 5.6;
+  const subsequentHolidayWeeks = settings?.holidayWeeksSubsequent ?? 7.29;
+  const bankHolidays = settings?.bankHolidayHours ?? 96;
+  const serviceWeeks = settings?.serviceLengthWeeks ?? 0;
+  const useFirstYear = settings?.useFirstYearRates ?? true;
 
-  if (weeksServiceAtCY >= 52) return 1878;
+  // Calculate holiday hours based on service length
+  let holidayHours: number;
+  if (useFirstYear || serviceWeeks < 52) {
+    // First year calculation: 42 × 5.6 = 235.2 hours
+    holidayHours = weeklyHours * firstYearHolidayWeeks;
+  } else {
+    // Subsequent years: 42 × 7.29 = 306 hours
+    holidayHours = weeklyHours * subsequentHolidayWeeks;
+  }
 
-  const firstYear = 1920;
+  // Calculate annual target
+  const annualHours = (weeklyHours * 52) - holidayHours - bankHolidays;
+
+  // If starting mid-contract year, pro-rate
   const cyEnd = cyStart.plus({ years: 1 }).minus({ milliseconds: 1 });
   const weeksRemaining = Math.max(
     0,
     Math.floor(cyEnd.diff(cyStart, "weeks").weeks)
   );
-  return Math.round((firstYear / 52) * weeksRemaining);
+
+  if (weeksRemaining < 52) {
+    return Math.round((annualHours / 52) * weeksRemaining);
+  }
+
+  return Math.round(annualHours);
 }

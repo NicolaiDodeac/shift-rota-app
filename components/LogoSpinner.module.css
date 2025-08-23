@@ -1,0 +1,124 @@
+.spinner {
+  position: relative;
+  display: inline-block;
+  width: 3rem;
+  height: 3rem;
+}
+
+.logoContainer {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+}
+
+.centerIcon {
+  position: relative;
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+.sunCenter {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 0.4rem;
+  height: 0.4rem;
+  background-color: #0f8fbd;
+  border-radius: 50%;
+}
+
+.sunRays {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.ray {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0.1rem;
+  height: 0.4rem;
+  background-color: #0f8fbd;
+  transform-origin: 0.05rem 0.2rem;
+}
+
+.arrows {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  animation: spin 2s linear infinite;
+}
+
+.curvedArrow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+}
+
+/* Size variants */
+.sm {
+  width: 2rem;
+  height: 2rem;
+}
+
+.sm .centerIcon {
+  width: 0.8rem;
+  height: 0.8rem;
+}
+
+.sm .sunCenter {
+  width: 0.3rem;
+  height: 0.3rem;
+}
+
+.sm .ray {
+  width: 0.075rem;
+  height: 0.3rem;
+  transform-origin: 0.0375rem 0.15rem;
+}
+
+.md {
+  width: 3rem;
+  height: 3rem;
+}
+
+.lg {
+  width: 4rem;
+  height: 4rem;
+}
+
+.lg .centerIcon {
+  width: 1.6rem;
+  height: 1.6rem;
+}
+
+.lg .sunCenter {
+  width: 0.5rem;
+  height: 0.5rem;
+}
+
+.lg .ray {
+  width: 0.125rem;
+  height: 0.5rem;
+  transform-origin: 0.0625rem 0.25rem;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

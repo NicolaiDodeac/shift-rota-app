@@ -4,6 +4,7 @@ export const config = {
   matcher: [
     "/api/((?!auth).*)",
     "/dashboard/:path*",
-    "/summary/:path*"
+    "/summary/:path*",
+    "/settings/:path*"
   ],
 };

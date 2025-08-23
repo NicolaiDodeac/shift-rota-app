@@ -24,14 +24,25 @@ model User {
 }
 
 model Settings {
-  id                String   @id @default(cuid())
-  userId            String   @unique
-  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tz                String   @default("Europe/London")
-  contractYearStart DateTime @default(now())
-  employmentStart   DateTime @default(now())
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  id                      String   @id @default(cuid())
+  userId                  String   @unique
+  user                    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tz                      String   @default("Europe/London")
+  contractYearStart       DateTime @default(now())
+  employmentStart         DateTime @default(now())
+  contractedWeeklyHours   Int      @default(42)
+  contractedAnnualHours   Int      @default(1920)
+  hoursPerShift           Int      @default(12)
+  daysPerWeek             Int      @default(4)
+  basicHoursCap           Int      @default(48)
+  overtimeMultiplier      Float    @default(1.5)
+  holidayWeeksFirstYear   Float    @default(5.6)
+  holidayWeeksSubsequent  Float    @default(7.29)
+  bankHolidayHours        Int      @default(96)
+  serviceLengthWeeks      Int      @default(0)
+  useFirstYearRates       Boolean  @default(true)
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
 }
 
 model ShiftInstance {

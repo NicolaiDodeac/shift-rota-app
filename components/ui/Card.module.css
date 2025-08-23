@@ -1,0 +1,66 @@
+.card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  transition: all var(--transition-normal);
+  backdrop-filter: blur(10px);
+}
+
+.card:hover {
+  border-color: var(--magna-orange);
+  transform: translateY(-2px);
+}
+
+/* Padding variants */
+.sm {
+  padding: var(--space-sm);
+}
+
+.md {
+  padding: var(--space-md);
+}
+
+.lg {
+  padding: var(--space-lg);
+}
+
+/* Elevation variants */
+.sm {
+  box-shadow: var(--shadow-sm);
+}
+
+.sm:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.md {
+  box-shadow: var(--shadow-md);
+}
+
+.md:hover {
+  box-shadow: var(--shadow-lg);
+}
+
+.lg {
+  box-shadow: var(--shadow-lg);
+}
+
+.lg:hover {
+  box-shadow: var(--shadow-xl);
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .card {
+    border-radius: var(--radius-md);
+    transform: none;
+  }
+  
+  .card:hover {
+    transform: translateY(-1px);
+  }
+  
+  .lg {
+    padding: var(--space-md);
+  }
+}
