@@ -68,9 +68,14 @@ async function withBackoff<T>(label: string, fn: () => Promise<T>): Promise<T> {
 }
 
 export async function POST(req: Request) {
+  console.log("POST /api/push called");
+  console.log("Request method:", req.method);
+  console.log("Request URL:", req.url);
   try {
     const session = await auth();
+    console.log("Session:", session ? "exists" : "null");
     if (!session?.user?.email) {
+      console.log("No session or email");
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
