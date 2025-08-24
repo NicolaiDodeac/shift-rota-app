@@ -6,6 +6,7 @@ import { Metadata } from "next";
 import AuthButtons from "@/components/AuthButtons";
 import Navigation from "@/components/Navigation";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 
 export const metadata: Metadata = {
@@ -46,6 +47,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       </head>
       <body>
         <Providers>
+          
           <div className="container">
             <header style={{
               display: 'flex',
@@ -81,7 +83,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               maxWidth: '100%',
               padding: '0 var(--space-sm)'
             }}>
-              {children}
+              <ErrorBoundary>
+                {children}
+              </ErrorBoundary>
             </main>
             <footer style={{
               marginTop: 'var(--space-2xl)',

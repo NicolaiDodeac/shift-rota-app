@@ -1,8 +1,8 @@
 "use client";
-import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import LoaderOverlay from "@/components/LoaderOverlay";
+import { useDashboard } from "@/lib/hooks/useDashboard";
 
 type Dashboard = {
   tz: string;
@@ -16,30 +16,7 @@ type Dashboard = {
 };
 
 export default function DashboardPage() {
-  const [data, setData] = useState<Dashboard | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await fetch("/api/dashboard");
-        
-        if (!res.ok) {
-          const errorText = await res.text();
-          throw new Error(`HTTP error! status: ${res.status} - ${errorText}`);
-        }
-        
-        const dashboardData = await res.json();
-        setData(dashboardData);
-      } catch (err) {
-        console.error("Dashboard fetch error:", err);
-        setError(err instanceof Error ? err.message : 'Failed to load dashboard');
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
+  const { data, isLoading, error } = useDashboard();
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -50,7 +27,7 @@ export default function DashboardPage() {
     });
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <main className="container">
         <LoaderOverlay 
@@ -69,7 +46,7 @@ export default function DashboardPage() {
         <Card padding="lg" elevation="md">
           <div style={{ textAlign: 'center' }}>
             <h1 style={{ color: 'var(--color-error)' }}>Dashboard Error</h1>
-            <p style={{ color: 'var(--color-text-secondary)' }}>{error}</p>
+            <p style={{ color: 'var(--color-text-secondary)' }}>{error.message}</p>
           </div>
         </Card>
       </main>

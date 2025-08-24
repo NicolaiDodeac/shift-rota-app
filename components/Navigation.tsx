@@ -2,20 +2,24 @@
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { usePrefetch } from "@/lib/hooks/usePrefetch";
+import { useUIStore } from "@/lib/stores/uiStore";
 
 export default function Navigation() {
   const { status } = useSession();
   const pathname = usePathname();
+  const { prefetchSummary, prefetchDashboard, prefetchSettings } = usePrefetch();
+  const { setSelectedWeek } = useUIStore();
 
   if (status !== "authenticated") {
     return null;
   }
 
   const navItems = [
-    { href: "/", label: "Home" },
-    { href: "/dashboard", label: "Dashboard" },
-    { href: "/summary", label: "Summary" },
-    { href: "/settings", label: "Settings" },
+    { href: "/", label: "Home", prefetch: () => {} },
+    { href: "/dashboard", label: "Dashboard", prefetch: prefetchDashboard },
+    { href: "/summary", label: "Summary", prefetch: prefetchSummary },
+    { href: "/settings", label: "Settings", prefetch: prefetchSettings },
   ];
 
   return (
@@ -39,6 +43,12 @@ export default function Navigation() {
           <li key={item.href} style={{ margin: 0 }}>
             <Link
               href={item.href}
+              onMouseEnter={() => {
+                item.prefetch();
+                if (item.href === "/summary") {
+                  setSelectedWeek(null); // Reset selected week when navigating to summary
+                }
+              }}
               style={{
                 color: pathname === item.href ? 'var(--color-primary)' : 'var(--color-text-secondary)',
                 textDecoration: 'none',

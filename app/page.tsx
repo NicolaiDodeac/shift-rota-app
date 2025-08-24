@@ -6,6 +6,7 @@ import LoaderOverlay from "@/components/LoaderOverlay";
 import ResultOverlay from "@/components/ResultOverlay";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import FeatureDemo from "@/components/FeatureDemo";
 import {
   generateShiftEvents,
   type ShiftConfig,
@@ -618,6 +619,9 @@ export default function Page() {
           </p>
         )}
       </Card>
+
+      {/* Feature Demo */}
+      <FeatureDemo />
 
       {/* Overlays */}
       {isPushing && (

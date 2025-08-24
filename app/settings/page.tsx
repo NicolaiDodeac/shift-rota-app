@@ -1,9 +1,10 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { signIn } from "next-auth/react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { useSettings, useUpdateSettings } from "@/lib/hooks/useSettings";
 
 type Settings = {
   tz: string;
@@ -24,73 +25,64 @@ type Settings = {
 
 export default function SettingsPage() {
   const { status } = useSession();
-  const [settings, setSettings] = useState<Settings | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [localSettings, setLocalSettings] = useState<Settings | null>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
-  useEffect(() => {
-    if (status === "authenticated") {
-      fetchSettings();
-    } else if (status === "unauthenticated") {
-      setLoading(false);
-    }
-  }, [status]);
+  // React Query hooks
+  const { data: settings, isLoading, error } = useSettings();
+  const updateSettingsMutation = useUpdateSettings();
 
-  const fetchSettings = async () => {
-    try {
-      const res = await fetch("/api/settings");
-      if (res.ok) {
-        const data = await res.json();
-        setSettings(data);
-      }
-    } catch (error) {
-      console.error("Failed to fetch settings:", error);
-    } finally {
-      setLoading(false);
+  // Initialize local settings when data loads
+  useEffect(() => {
+    if (settings && !localSettings) {
+      // Ensure all required fields have default values to prevent undefined errors
+      const safeSettings = {
+        tz: settings.tz || 'Europe/London',
+        contractYearStart: settings.contractYearStart || new Date().toISOString().split('T')[0] + 'T00:00:00.000Z',
+        employmentStart: settings.employmentStart || new Date().toISOString().split('T')[0] + 'T00:00:00.000Z',
+        contractedWeeklyHours: settings.contractedWeeklyHours || 42,
+        contractedAnnualHours: settings.contractedAnnualHours || 0,
+        hoursPerShift: settings.hoursPerShift || 12,
+        daysPerWeek: settings.daysPerWeek || 4,
+        basicHoursCap: settings.basicHoursCap || 42,
+        overtimeMultiplier: settings.overtimeMultiplier || 1.5,
+        holidayWeeksFirstYear: settings.holidayWeeksFirstYear || 5.6,
+        holidayWeeksSubsequent: settings.holidayWeeksSubsequent || 7.29,
+        bankHolidayHours: settings.bankHolidayHours || 96,
+        serviceLengthWeeks: settings.serviceLengthWeeks || 0,
+        useFirstYearRates: settings.useFirstYearRates ?? true,
+      };
+      setLocalSettings(safeSettings);
     }
-  };
+  }, [settings, localSettings]);
 
   const saveSettings = async () => {
-    if (!settings) return;
+    if (!localSettings) return;
     
-    setSaving(true);
     setMessage(null);
     
     try {
-      const res = await fetch("/api/settings", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(settings),
-      });
-      
-      if (res.ok) {
-        setMessage({ type: 'success', text: 'Settings saved successfully!' });
-      } else {
-        const error = await res.text();
-        setMessage({ type: 'error', text: `Failed to save: ${error}` });
-      }
+      await updateSettingsMutation.mutateAsync(localSettings);
+      setMessage({ type: 'success', text: 'Settings saved successfully!' });
     } catch (error) {
-      setMessage({ type: 'error', text: 'Network error while saving' });
-    } finally {
-      setSaving(false);
+      setMessage({ type: 'error', text: 'Failed to save settings' });
     }
   };
 
   const handleInputChange = (field: keyof Settings, value: string | number | boolean) => {
-    if (!settings) return;
-    setSettings({ ...settings, [field]: value });
+    if (!localSettings) return;
+    setLocalSettings({ ...localSettings, [field]: value });
   };
 
   const calculateTargetHours = () => {
-    if (!settings) return { firstYear: 1920, subsequent: 1878 };
+    if (!localSettings) return { firstYear: 1920, subsequent: 1878 };
     
-    const weeklyHours = settings.contractedWeeklyHours;
-    const firstYearHoliday = weeklyHours * settings.holidayWeeksFirstYear;
-    const subsequentHoliday = weeklyHours * settings.holidayWeeksSubsequent;
+    const weeklyHours = localSettings.contractedWeeklyHours || 42;
+    const firstYearHoliday = weeklyHours * (localSettings.holidayWeeksFirstYear || 5.6);
+    const subsequentHoliday = weeklyHours * (localSettings.holidayWeeksSubsequent || 7.29);
     
-    const firstYear = Math.round((weeklyHours * 52) - firstYearHoliday - settings.bankHolidayHours);
-    const subsequent = Math.round((weeklyHours * 52) - subsequentHoliday - settings.bankHolidayHours);
+    const firstYear = Math.round((weeklyHours * 52) - firstYearHoliday - (localSettings.bankHolidayHours || 96));
+    const subsequent = Math.round((weeklyHours * 52) - subsequentHoliday - (localSettings.bankHolidayHours || 96));
     
     return { firstYear, subsequent };
   };
@@ -111,7 +103,7 @@ export default function SettingsPage() {
     );
   }
 
-  if (loading) {
+  if (isLoading) {
     return (
       <main className="container">
         <Card padding="lg" elevation="md">
@@ -177,7 +169,7 @@ export default function SettingsPage() {
               <label style={{ display: 'block', marginBottom: 'var(--space-xs)', fontWeight: 500 }}>Contract Year Start</label>
               <input
                 type="date"
-                value={settings.contractYearStart.split('T')[0]}
+                value={localSettings?.contractYearStart ? localSettings.contractYearStart.split('T')[0] : ''}
                 onChange={(e) => handleInputChange('contractYearStart', e.target.value + 'T00:00:00.000Z')}
                 style={{
                   width: '100%',
@@ -196,7 +188,7 @@ export default function SettingsPage() {
               <label style={{ display: 'block', marginBottom: 'var(--space-xs)', fontWeight: 500 }}>Employment Start</label>
               <input
                 type="date"
-                value={settings.employmentStart.split('T')[0]}
+                value={localSettings?.employmentStart ? localSettings.employmentStart.split('T')[0] : ''}
                 onChange={(e) => handleInputChange('employmentStart', e.target.value + 'T00:00:00.000Z')}
                 style={{
                   width: '100%',
@@ -217,7 +209,7 @@ export default function SettingsPage() {
                 type="number"
                 min="1"
                 max="168"
-                value={settings.contractedWeeklyHours}
+                value={localSettings?.contractedWeeklyHours || ''}
                 onChange={(e) => handleInputChange('contractedWeeklyHours', Number(e.target.value))}
                 style={{
                   width: '100%',
@@ -235,7 +227,7 @@ export default function SettingsPage() {
             <div>
               <label style={{ display: 'block', marginBottom: 'var(--space-xs)', fontWeight: 500 }}>Timezone</label>
               <select
-                value={settings.tz}
+                value={localSettings?.tz || ''}
                 onChange={(e) => handleInputChange('tz', e.target.value)}
                 style={{
                   width: '100%',
@@ -274,7 +266,7 @@ export default function SettingsPage() {
                 min="1"
                 max="24"
                 step="0.5"
-                value={settings.hoursPerShift}
+                value={localSettings?.hoursPerShift || ''}
                 onChange={(e) => handleInputChange('hoursPerShift', Number(e.target.value))}
                 style={{
                   width: '100%',
@@ -295,7 +287,7 @@ export default function SettingsPage() {
                 type="number"
                 min="1"
                 max="7"
-                value={settings.daysPerWeek}
+                value={localSettings?.daysPerWeek || ''}
                 onChange={(e) => handleInputChange('daysPerWeek', Number(e.target.value))}
                 style={{
                   width: '100%',
@@ -316,7 +308,7 @@ export default function SettingsPage() {
                 type="number"
                 min="1"
                 max="168"
-                value={settings.basicHoursCap}
+                value={localSettings?.basicHoursCap || ''}
                 onChange={(e) => handleInputChange('basicHoursCap', Number(e.target.value))}
                 style={{
                   width: '100%',
@@ -338,7 +330,7 @@ export default function SettingsPage() {
                 min="1"
                 max="3"
                 step="0.1"
-                value={settings.overtimeMultiplier}
+                value={localSettings?.overtimeMultiplier || ''}
                 onChange={(e) => handleInputChange('overtimeMultiplier', Number(e.target.value))}
                 style={{
                   width: '100%',
@@ -370,7 +362,7 @@ export default function SettingsPage() {
                 min="0"
                 max="52"
                 step="0.1"
-                value={settings.holidayWeeksFirstYear}
+                value={localSettings?.holidayWeeksFirstYear || ''}
                 onChange={(e) => handleInputChange('holidayWeeksFirstYear', Number(e.target.value))}
                 style={{
                   width: '100%',
@@ -392,7 +384,7 @@ export default function SettingsPage() {
                 min="0"
                 max="52"
                 step="0.1"
-                value={settings.holidayWeeksSubsequent}
+                value={localSettings?.holidayWeeksSubsequent || ''}
                 onChange={(e) => handleInputChange('holidayWeeksSubsequent', Number(e.target.value))}
                 style={{
                   width: '100%',
@@ -413,7 +405,7 @@ export default function SettingsPage() {
                 type="number"
                 min="0"
                 max="8760"
-                value={settings.bankHolidayHours}
+                value={localSettings?.bankHolidayHours || ''}
                 onChange={(e) => handleInputChange('bankHolidayHours', Number(e.target.value))}
                 style={{
                   width: '100%',
@@ -434,7 +426,7 @@ export default function SettingsPage() {
                 type="number"
                 min="0"
                 max="520"
-                value={settings.serviceLengthWeeks}
+                value={localSettings?.serviceLengthWeeks || ''}
                 onChange={(e) => handleInputChange('serviceLengthWeeks', Number(e.target.value))}
                 style={{
                   width: '100%',
@@ -462,7 +454,7 @@ export default function SettingsPage() {
             <div>
               <label style={{ display: 'block', marginBottom: 'var(--space-xs)', fontWeight: 500 }}>Use First Year Rates</label>
               <select
-                value={settings.useFirstYearRates ? 'true' : 'false'}
+                value={localSettings?.useFirstYearRates ? 'true' : 'false'}
                 onChange={(e) => handleInputChange('useFirstYearRates', e.target.value === 'true')}
                 style={{
                   width: '100%',
@@ -486,7 +478,7 @@ export default function SettingsPage() {
                 type="number"
                 min="1"
                 max="8760"
-                value={settings.contractedAnnualHours}
+                value={localSettings?.contractedAnnualHours || ''}
                 onChange={(e) => handleInputChange('contractedAnnualHours', Number(e.target.value))}
                 style={{
                   width: '100%',
@@ -516,7 +508,7 @@ export default function SettingsPage() {
                   {targetHours.firstYear}h
                 </p>
                 <small style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-xs)' }}>
-                  Based on {settings.holidayWeeksFirstYear} weeks holiday
+                  Based on {localSettings?.holidayWeeksFirstYear || 5.6} weeks holiday
                 </small>
               </Card>
               <Card padding="md" elevation="sm">
@@ -525,7 +517,7 @@ export default function SettingsPage() {
                   {targetHours.subsequent}h
                 </p>
                 <small style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-xs)' }}>
-                  Based on {settings.holidayWeeksSubsequent} weeks holiday
+                  Based on {localSettings?.holidayWeeksSubsequent || 7.29} weeks holiday
                 </small>
               </Card>
             </div>
@@ -534,11 +526,11 @@ export default function SettingsPage() {
 
         {/* Actions */}
         <div style={{ display: 'flex', gap: 'var(--space-md)', flexWrap: 'wrap' }}>
-          <Button variant="primary" onClick={saveSettings} disabled={saving}>
-            {saving ? 'Saving...' : 'Save Settings'}
+          <Button variant="primary" onClick={saveSettings} disabled={updateSettingsMutation.isPending}>
+            {updateSettingsMutation.isPending ? 'Saving...' : 'Save Settings'}
           </Button>
           
-          <Button variant="secondary" onClick={fetchSettings} disabled={saving}>
+          <Button variant="secondary" onClick={() => window.location.reload()} disabled={updateSettingsMutation.isPending}>
             Reset to Saved
           </Button>
         </div>
