@@ -19,6 +19,7 @@ export default function Navigation() {
     { href: "/", label: "Home", prefetch: () => {} },
     { href: "/dashboard", label: "Dashboard", prefetch: prefetchDashboard },
     { href: "/summary", label: "Summary", prefetch: prefetchSummary },
+    { href: "/planning", label: "Planning", prefetch: () => {} },
     { href: "/settings", label: "Settings", prefetch: prefetchSettings },
   ];
 

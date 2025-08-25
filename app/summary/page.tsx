@@ -172,9 +172,7 @@ export default function SummaryPage() {
       <main className={styles.container}>
         <LoaderOverlay 
           title="Loading Summary"
-          subtitle="Please wait while we fetch your data..."
-          size="lg"
-          variant="inline"
+          sub="Please wait while we fetch your data..."
         />
       </main>
     );
@@ -205,9 +203,7 @@ export default function SummaryPage() {
       <main className={styles.container}>
         <LoaderOverlay 
           title="Loading Summary"
-          subtitle="Please wait while we fetch your data..."
-          size="lg"
-          variant="inline"
+          sub="Please wait while we fetch your data..."
         />
       </main>
     );
@@ -514,6 +510,8 @@ export default function SummaryPage() {
           );
         })}
       </div>
+
+
 
       {/* Instructions */}
       <Card padding="md" elevation="sm" style={{ marginTop: 'var(--space-lg)' }}>

@@ -34,7 +34,7 @@ export default function SettingsPage() {
 
   // Initialize local settings when data loads
   useEffect(() => {
-    if (settings && !localSettings) {
+    if (settings) {
       // Ensure all required fields have default values to prevent undefined errors
       const safeSettings = {
         tz: settings.tz || 'Europe/London',
@@ -54,7 +54,7 @@ export default function SettingsPage() {
       };
       setLocalSettings(safeSettings);
     }
-  }, [settings, localSettings]);
+  }, [settings]);
 
   const saveSettings = async () => {
     if (!localSettings) return;

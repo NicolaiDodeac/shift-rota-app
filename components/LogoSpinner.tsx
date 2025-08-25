@@ -17,7 +17,7 @@ export default function LogoSpinner({
   return (
     <div className={`${styles.spinner} ${styles[size]} ${className}`} style={style}>
       <div className={styles.logoContainer}>
-        {/* Central sun/gear icon */}
+        {/* Central sun/gear icon with pulsing animation */}
         <div className={styles.centerIcon}>
           <div className={styles.sunCenter}></div>
           <div className={styles.sunRays}>
@@ -34,11 +34,11 @@ export default function LogoSpinner({
       
       {/* Rotating curved arrows from the logo */}
       <div className={styles.arrows}>
-        {/* Dark blue curved arrow (top-left, clockwise) */}
+        {/* Primary curved arrow (top-left, clockwise) */}
         <svg className={styles.curvedArrow} viewBox="0 0 100 100">
           <path 
             d="M 25 25 A 25 25 0 0 1 75 75" 
-            stroke="var(--midnight-800)" 
+            className={styles.primaryArrow}
             strokeWidth="6" 
             fill="none" 
             strokeLinecap="round"
@@ -46,11 +46,11 @@ export default function LogoSpinner({
           />
         </svg>
         
-        {/* Orange curved arrow (bottom-right, counter-clockwise) */}
+        {/* Secondary curved arrow (bottom-right, counter-clockwise) */}
         <svg className={styles.curvedArrow} viewBox="0 0 100 100">
           <path 
             d="M 75 75 A 25 25 0 0 0 25 25" 
-            stroke="var(--magna-orange)" 
+            className={styles.secondaryArrow}
             strokeWidth="6" 
             fill="none" 
             strokeLinecap="round"

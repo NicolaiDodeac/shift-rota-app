@@ -1,0 +1,328 @@
+.container {
+  padding: var(--space-lg);
+}
+
+.header {
+  margin-bottom: var(--space-lg);
+}
+
+.headerContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--space-sm);
+}
+
+.headerText {
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-xs);
+}
+
+.warningText {
+  color: var(--color-warning);
+  font-size: var(--font-size-sm);
+  margin: 0;
+}
+
+.refreshButton {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.refreshIcon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.section {
+  margin-bottom: var(--space-lg);
+}
+
+.sectionTitle {
+  margin-bottom: var(--space-md);
+}
+
+.statusGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--space-md);
+}
+
+.projectionsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--space-md);
+}
+
+.statusCard {
+  text-align: center;
+}
+
+.statusTitle {
+  margin-bottom: var(--space-md);
+}
+
+.statusText {
+  font-size: var(--font-size-3xl);
+  font-weight: 700;
+}
+
+.statusTextOnTrack {
+  color: var(--color-success);
+}
+
+.statusTextBehind {
+  color: var(--color-warning);
+}
+
+.statusSubtext {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  margin: 0 0 var(--space-sm) 0;
+}
+
+.statusSubtextLast {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  margin: 0;
+}
+
+.overtimeTitle {
+  margin-bottom: var(--space-md);
+}
+
+.overtimeAmount {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  margin-bottom: var(--space-sm);
+}
+
+.overtimeAmountAchievable {
+  color: var(--color-warning);
+}
+
+.overtimeAmountNotAchievable {
+  color: var(--color-error);
+}
+
+.overtimeAmountSuccess {
+  color: var(--color-success);
+}
+
+.overtimeSubtext {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  margin: 0 0 var(--space-sm) 0;
+}
+
+.overtimeSubtextLast {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  margin: 0;
+}
+
+.overtimeCenter {
+  text-align: center;
+}
+
+.overtimeCenterText {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  color: var(--color-success);
+}
+
+.overtimeCenterSubtext {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  margin: var(--space-sm) 0 0 0;
+}
+
+.monthlyHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-md);
+}
+
+.loadMoreButton {
+  padding: var(--space-sm) var(--space-md);
+  font-size: var(--font-size-sm);
+}
+
+.loadMoreIcon {
+  width: 1rem;
+  height: 1rem;
+  margin-right: var(--space-xs);
+}
+
+.spinnerIcon {
+  width: 1rem;
+  height: 1rem;
+  margin-right: var(--space-xs);
+}
+
+.monthlyCard {
+  margin-bottom: var(--space-md);
+}
+
+.monthlyTitle {
+  margin-bottom: var(--space-md);
+}
+
+.monthlySummaryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+}
+
+.summaryCard {
+  padding: var(--space-sm);
+  background-color: var(--color-background-secondary);
+  border-radius: var(--border-radius);
+  text-align: center;
+}
+
+.summaryLabel {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.summaryValue {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+}
+
+.summaryValueSuccess {
+  color: var(--color-success);
+}
+
+.summaryValuePrimary {
+  color: var(--color-primary);
+}
+
+.summaryValueWarning {
+  color: var(--color-warning);
+}
+
+.weeklyGrid {
+  display: grid;
+  gap: var(--space-xs);
+}
+
+.weeklyItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-xs) var(--space-sm);
+  background-color: var(--color-surface);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--color-border);
+}
+
+.weeklyDates {
+  font-weight: 500;
+  font-size: var(--font-size-sm);
+}
+
+.weeklyStatus {
+  margin-left: var(--space-sm);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.weeklyHours {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+}
+
+.weeklyHoursConfirmed {
+  color: var(--color-success);
+}
+
+.weeklyHoursPredicted {
+  color: var(--color-primary);
+}
+
+.noWeeksMessage {
+  color: var(--color-text-secondary);
+  text-align: center;
+  font-size: var(--font-size-sm);
+}
+
+.recommendationsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--space-md);
+}
+
+.recommendationCard {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-sm);
+}
+
+.recommendationDate {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.recommendationOvertime {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--color-warning);
+}
+
+.recommendationDetails {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.errorContainer {
+  text-align: center;
+}
+
+.errorTitle {
+  color: var(--color-error);
+}
+
+.errorMessage {
+  color: var(--color-text-secondary);
+}
+
+.loadMoreContainer {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--space-xl);
+  margin-bottom: var(--space-lg);
+}
+
+.confirmedHours {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  color: var(--color-success);
+  margin: 0;
+}
+
+.predictedHours {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  color: var(--color-primary);
+  margin: 0;
+}
+
+.targetHours {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.weeksRemaining {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0;
+}
